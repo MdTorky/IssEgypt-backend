@@ -21,16 +21,32 @@ app.use((req, res, next) => {
 app.use('/api/forms', formRoutes)
 
 // connect to db
-mongoose.connect(process.env.MONGO_URI, {
+console.log('MongoDB URI:', process.env.MONGO_URI);
+// mongoose.connect(process.env.MONGO_URI, {
+//     useNewUrlParser: true,
+//     useUnifiedTopology: true,
+// })
+//     .then(() => {
+//         console.log('connected to database')
+//         // listen to port
+//         app.listen(process.env.PORT, () => {
+//             console.log('listening for requests on port', process.env.PORT)
+//         })
+//     })
+//     .catch((err) => {
+//         console.log(err)
+//     }) 
 
+mongoose.connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
 })
     .then(() => {
-        console.log('connected to database')
-        // listen to port
+        console.log('Connected to MongoDB');
         app.listen(process.env.PORT, () => {
-            console.log('listening for requests on port', process.env.PORT)
-        })
+            console.log('Server is running on port', process.env.PORT);
+        });
     })
     .catch((err) => {
-        console.log(err)
-    }) 
+        console.error('Error connecting to MongoDB:', err);
+    });
