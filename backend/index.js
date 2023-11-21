@@ -23,32 +23,31 @@ app.use('/api/forms', formRoutes)
 
 // connect to db
 console.log('MongoDB URI:', process.env.MONGO_URI);
+mongoose.connect(process.env.MONGO_URI, {
+
+})
+    .then(() => {
+        console.log('connected to database')
+        // listen to port
+        app.listen(process.env.PORT, () => {
+            console.log('listening for requests on port', process.env.PORT)
+        })
+    })
+    .catch((err) => {
+        console.log(err)
+    })
+
 // mongoose.connect(process.env.MONGO_URI, {
 //     useNewUrlParser: true,
 //     useUnifiedTopology: true,
 // })
 //     .then(() => {
-//         console.log('connected to database')
-//         // listen to port
-//         app.listen(process.env.PORT, () => {
-//             console.log('listening for requests on port', process.env.PORT)
-//         })
+//         console.log('Connected to MongoDB');
+//         const PORT = process.env.PORT || 3000; // Use the provided PORT or default to 3000
+//         app.listen(PORT, () => {
+//             console.log(`Server is running on port ${PORT}`);
+//         });
 //     })
 //     .catch((err) => {
-//         console.log(err)
-//     }) 
-
-mongoose.connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-})
-    .then(() => {
-        console.log('Connected to MongoDB');
-        const PORT = process.env.PORT || 3000; // Use the provided PORT or default to 3000
-        app.listen(PORT, () => {
-            console.log(`Server is running on port ${PORT}`);
-        });
-    })
-    .catch((err) => {
-        console.error('Error connecting to MongoDB:', err);
-    });
+//         console.error('Error connecting to MongoDB:', err);
+//     });
