@@ -9,10 +9,12 @@ const formRoutes = require('./routes/forms')
 const app = express()
 
 // middleware
-app.use(express.json())
 // app.use(cors({
-//     origin: 'https://'
+//     origin: ['https://localhost:4000'],
+//     methods: ['GET', 'POST', 'DELETE'],
+//     credentials: true
 // }))
+app.use(express.json())
 
 app.use((req, res, next) => {
     console.log(req.path, req.method)
