@@ -14,7 +14,7 @@ app.use(cors());
 
 app.use(express.json())
 
-app.use('/images', express.static('images'));
+
 
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -27,6 +27,9 @@ app.use((req, res, next) => {
 app.use('/api/forms', formRoutes)
 app.use('/api/member', memberRoutes)
 // app.use(express.static('images'))
+app.use('/images', express.static(path.join(__dirname, 'images')));
+
+
 // connect to db
 console.log('MongoDB URI:', process.env.MONGO_URI);
 mongoose.connect(process.env.MONGO_URI, {
