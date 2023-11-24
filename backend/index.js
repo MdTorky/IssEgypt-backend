@@ -3,13 +3,18 @@ require('dotenv').config()
 const express = require('express')
 const mongoose = require('mongoose')
 const formRoutes = require('./routes/forms')
+const memberRoutes = require('./routes/members')
 const cors = require('cors');
+const multer = require('multer');
+const path = require('path');
 // express app
 const app = express()
 
 app.use(cors());
 
 app.use(express.json())
+
+
 
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -20,7 +25,8 @@ app.use((req, res, next) => {
 
 // routes
 app.use('/api/forms', formRoutes)
-
+app.use('/api/member', memberRoutes)
+app.use(express.static('images'))
 // connect to db
 console.log('MongoDB URI:', process.env.MONGO_URI);
 mongoose.connect(process.env.MONGO_URI, {
