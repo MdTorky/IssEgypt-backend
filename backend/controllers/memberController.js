@@ -1,6 +1,7 @@
 const Member = require('../models/memberModel')
 const mongoose = require('mongoose')
 const multer = require('multer');
+const fs = require('fs');
 const path = require('path');
 
 
@@ -32,14 +33,18 @@ const getMember = async (req, res) => {
 
 
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'images')
+    destination: function (req, file, cb) {
+        // Check if the 'images' directory exists, create it if not
+        const uploadDir = './images';
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir);
+        }
+        cb(null, uploadDir);
     },
-    filename: (req, file, cb) => {
-        cb(null, file.fieldname + "_" + Date.now() + path.extname(file.originalname));
-    }
-
-})
+    filename: function (req, file, cb) {
+        cb(null, file.fieldname + '_' + Date.now() + path.extname(file.originalname));
+    },
+});
 
 const upload = multer({ storage: storage });
 
