@@ -28,8 +28,7 @@ app.use((req, res, next) => {
 // routes
 app.use('/api/forms', formRoutes);
 app.use('/api/member', memberRoutes);
-// app.use('/images', express.static(path.join(__dirname, 'images')));
-app.use(express.static(__dirname));
+app.use('/images', express.static(path.join(__dirname, 'images')));
 
 // connect to db
 console.log('MongoDB URI:', process.env.MONGO_URI);
