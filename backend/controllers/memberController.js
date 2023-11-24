@@ -35,12 +35,17 @@ const getMember = async (req, res) => {
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         // Check if the 'images' directory exists, create it if not
-        fs.mkdir('./images/', (err) => {
-            cb(null, 'images');
-        });
+        // fs.mkdir('./images/', (err) => {
+
+        const dir = './images/';
+        // });
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+        }
+        cb(null, dir);
     },
     filename: function (req, file, cb) {
-        console.log(file)
+        console.log(file);
         cb(null, new Date().toISOString().replace(/:/g, '-') + file.originalname);
     },
 });
