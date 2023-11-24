@@ -26,7 +26,7 @@ app.use((req, res, next) => {
 // routes
 app.use('/api/forms', formRoutes)
 app.use('/api/member', memberRoutes)
-app.use(express.static('images'))
+// app.use(express.static('images'))
 // connect to db
 console.log('MongoDB URI:', process.env.MONGO_URI);
 mongoose.connect(process.env.MONGO_URI, {
