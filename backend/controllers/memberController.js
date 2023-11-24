@@ -33,16 +33,13 @@ const getMember = async (req, res) => {
 
 
 const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
+    destination: (req, file, cb) => {
         // Check if the 'images' directory exists, create it if not
-        const uploadDir = './images';
-        if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir);
-        }
-        cb(null, uploadDir);
+
+        cb(null, '../images');
     },
     filename: function (req, file, cb) {
-        cb(null, file.fieldname + '_' + Date.now() + path.extname(file.originalname));
+        cb(null, Date.now() + path.extname(file.originalname));
     },
 });
 
