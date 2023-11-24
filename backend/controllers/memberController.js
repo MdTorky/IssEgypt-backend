@@ -34,7 +34,7 @@ const getMember = async (req, res) => {
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, path.join(__dirname, 'images'));
+        cb(null, path.join(__dirname, '../images'));
     },
     filename: function (req, file, cb) {
         console.log(file);
