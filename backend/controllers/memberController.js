@@ -34,12 +34,10 @@ const getMember = async (req, res) => {
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        // Check if the 'images' directory exists, create it if not
-
-        cb(null, 'images/');
+        cb(null, path.join(__dirname, 'images'));
     },
     filename: function (req, file, cb) {
-        console.log(file)
+        console.log(file);
         cb(null, Date.now() + path.extname(file.originalname));
     },
 });
@@ -59,6 +57,9 @@ const upload = multer({ storage: storage });
 // }
 
 const createMember = async (req, res) => {
+
+    console.log('Current working directory:', process.cwd());
+    console.log('Images directory exists:', fs.existsSync('images'));
     const { name, arabicName, email, faculty, type, committee, phone, linkedIn, memberId } = req.body;
     try {
         // Use upload.single to handle single-file uploads
@@ -71,7 +72,7 @@ const createMember = async (req, res) => {
             if (!req.file) {
                 return res.status(400).json({ error: 'Image file is required.' });
             }
-
+            console.log('File path:', req.file.filename);
             const member = await Member.create({
                 name: req.body.name,
                 arabicName: req.body.arabicName,
