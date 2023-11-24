@@ -4,8 +4,15 @@ const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
 
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
 
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 const getMembers = async (req, res) => {
     const members = await Member.find({}).sort({ createdAt: -1 })
@@ -32,18 +39,27 @@ const getMember = async (req, res) => {
 }
 
 
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, path.join(__dirname, '../images'));
-    },
-    filename: function (req, file, cb) {
-        console.log(file);
-        cb(null, Date.now() + path.extname(file.originalname));
-    },
+// const storage = multer.diskStorage({
+//     destination: (req, file, cb) => {
+
+//         cb(null, 'images');
+//     },
+//     filename: function (req, file, cb) {
+//         console.log(file)
+//         cb(null, Date.now() + path.extname(file.originalname));
+//     },
+// });
+
+
+const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    folder: 'members', // you can change this folder name
+    allowedFormats: ['jpg', 'png', 'jpeg'],
+    transformation: [{ width: 500, height: 500, crop: 'limit' }],
 });
 
 const upload = multer({ storage: storage });
-
+const router = express.Router();
 
 // const createMember = async (req, res) => {
 //     const { name, arabicName, email, faculty, type, committee, img, phone, linkedIn, memberId } = req.body
@@ -57,9 +73,6 @@ const upload = multer({ storage: storage });
 // }
 
 const createMember = async (req, res) => {
-
-    console.log('Current working directory:', process.cwd());
-    console.log('Images directory exists:', fs.existsSync('images'));
     const { name, arabicName, email, faculty, type, committee, phone, linkedIn, memberId } = req.body;
     try {
         // Use upload.single to handle single-file uploads
@@ -72,7 +85,9 @@ const createMember = async (req, res) => {
             if (!req.file) {
                 return res.status(400).json({ error: 'Image file is required.' });
             }
-            console.log('File path:', req.file.filename);
+
+            const result = await cloudinary.uploader.upload(req.file.path);
+
             const member = await Member.create({
                 name: req.body.name,
                 arabicName: req.body.arabicName,
@@ -80,7 +95,7 @@ const createMember = async (req, res) => {
                 faculty: req.body.faculty,
                 type: req.body.type,
                 committee: req.body.committee,
-                img: req.file.filename,  // Use req.file to access the uploaded file
+                img: result.secure_url,  // Use req.file to access the uploaded file
                 phone: req.body.phone,
                 linkedIn: req.body.linkedIn,
                 memberId: req.body.memberId,
@@ -136,5 +151,6 @@ module.exports = {
     getMembers,
     getMember,
     deleteMember,
-    updateMember
+    updateMember,
+    router
 }
