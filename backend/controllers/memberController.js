@@ -36,7 +36,7 @@ const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         // Check if the 'images' directory exists, create it if not
 
-        cb(null, 'images');
+        cb(null, './images/');
     },
     filename: function (req, file, cb) {
         console.log(file)
