@@ -23,16 +23,6 @@ app.use((req, res, next) => {
 });
 
 
-const allowedOrigins = ['https://issegypt.vercel.app'];
-app.use((req, res, next) => {
-    const origin = req.headers.origin;
-    if (allowedOrigins.includes(origin)) {
-        res.setHeader('Access-Control-Allow-Origin', origin);
-    }
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    next();
-});
 
 
 
@@ -41,7 +31,7 @@ app.use((req, res, next) => {
 app.use('/api/forms', formRoutes);
 app.use('/api/member', memberRoutes);
 app.use('/images', express.static(path.join(__dirname, 'images')));
-
+app.use('/uploads', express.static('uploads'));
 // connect to db
 console.log('MongoDB URI:', process.env.MONGO_URI);
 mongoose.connect(process.env.MONGO_URI, {})
