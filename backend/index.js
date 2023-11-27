@@ -12,6 +12,9 @@ const path = require('path');
 const app = express();
 app.use(cors());
 
+
+app.use(bodyParser.json({ limit: '50mb' }));
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.json());
 
 app.use((req, res, next) => {
@@ -46,8 +49,7 @@ const handler = (req, res) => {
 }
 module.exports = allowCors(handler)
 
-app.use(bodyParser.json({ limit: '50mb' }));
-app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
+
 // routes
 app.use('/api/forms', formRoutes);
 app.use('/api/member', memberRoutes);
