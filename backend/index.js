@@ -46,7 +46,8 @@ const handler = (req, res) => {
 }
 module.exports = allowCors(handler)
 
-
+app.use(bodyParser.json({ limit: '50mb' }));
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 // routes
 app.use('/api/forms', formRoutes);
 app.use('/api/member', memberRoutes);
