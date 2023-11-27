@@ -37,7 +37,7 @@ const storage = multer.diskStorage({
         // Check if the 'images' directory exists, create it if not
         // fs.mkdir('./images/', (err) => {
 
-        const dir = './images/';
+        const dir = './uploads/';
         // });
         if (!fs.existsSync(dir)) {
             fs.mkdirSync(dir, { recursive: true });
