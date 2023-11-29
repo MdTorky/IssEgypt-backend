@@ -83,7 +83,7 @@ const createMember = async (req, res) => {
                 faculty: req.body.faculty,
                 type: req.body.type,
                 committee: req.body.committee,
-                img: req.file.filename,  // Use req.file to access the uploaded file
+                img: `/uploads/${req.file.filename}`,  // Use the correct path
                 phone: req.body.phone,
                 linkedIn: req.body.linkedIn,
                 memberId: req.body.memberId,
@@ -92,7 +92,7 @@ const createMember = async (req, res) => {
             res.status(200).json(member);
         });
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        res.status(500).json({ error: error.message });
     }
 };
 

@@ -1,5 +1,7 @@
 const express = require('express')
 const Member = require('../models/memberModel')
+const cors = require('cors');
+
 const {
     createMember,
     getMembers,
@@ -9,6 +11,9 @@ const {
 } = require('../controllers/memberController')
 
 const router = express.Router()
+
+
+router.use(cors());
 
 // GET all workouts
 router.get('/', getMembers)
