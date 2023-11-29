@@ -3,14 +3,8 @@ const mongoose = require('mongoose')
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
-import { v2 as cloudinary } from 'cloudinary';
 
 
-cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET,
-});
 
 
 const getMembers = async (req, res) => {
@@ -38,29 +32,27 @@ const getMember = async (req, res) => {
 }
 
 
-// const storage = multer.diskStorage({
-//     destination: (req, file, cb) => {
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        // Check if the 'images' directory exists, create it if not
+        // fs.mkdir('./images/', (err) => {
 
-//         const dir = './uploads/';
-//         if (!fs.existsSync(dir)) {
-//             fs.mkdirSync(dir, { recursive: true });
-//         }
-//         cb(null, dir);
-//     },
-//     filename: function (req, file, cb) {
-//         console.log(file);
-//         cb(null, new Date().toISOString().replace(/:/g, '-') + file.originalname);
-//     },
-// });
-
-
-const storage = cloudinaryStorage({
-    cloudinary: cloudinary,
-    params: {
-        folder: 'uploads', // Optional, specify a folder to organize uploads
-        format: async (req, file) => 'png', // Format of the image uploaded to Cloudinary
-        public_id: (req, file) => 'uploads', // Unique name for the uploaded file
+        const dir = './uploads/';
+        // });
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+        }
+        cb(null, dir);
     },
+    filename: function (req, file, cb) {
+        console.log(file);
+        cb(null, new Date().toISOString().replace(/:/g, '-') + file.originalname);
+    },
+});
+
+const upload = multer({
+    storage: storage,
+    limits: { fileSize: 1024 * 1024 * 5 },
 });
 
 
@@ -75,71 +67,35 @@ const storage = cloudinaryStorage({
 //     }
 // }
 
-// const createMember = async (req, res) => {
-//     const { name, arabicName, email, faculty, type, committee, phone, linkedIn, memberId } = req.body;
-//     try {
-//         upload.single('file')(req, res, async function (err) {
-//             if (err) {
-//                 return res.status(400).json({ error: err.message });
-//             }
-
-//             if (!req.file) {
-//                 return res.status(400).json({ error: 'Image file is required.' });
-//             }
-
-//             const member = await Member.create({
-//                 name: req.body.name,
-//                 arabicName: req.body.arabicName,
-//                 email: req.body.email,
-//                 faculty: req.body.faculty,
-//                 type: req.body.type,
-//                 committee: req.body.committee,
-//                 img: req.file.filename, 
-//                 phone: req.body.phone,
-//                 linkedIn: req.body.linkedIn,
-//                 memberId: req.body.memberId,
-//             });
-
-//             res.status(200).json(member);
-//         });
-//     } catch (error) {
-//         res.status(400).json({ error: error.message });
-//     }
-// };
-
-
 const createMember = async (req, res) => {
-    const {
-        name,
-        arabicName,
-        email,
-        faculty,
-        type,
-        committee,
-        phone,
-        linkedIn,
-        memberId,
-    } = req.body;
-
+    const { name, arabicName, email, faculty, type, committee, phone, linkedIn, memberId } = req.body;
     try {
-        const result = await cloudinary.uploader.upload(req.file.path);
-        const member = await Member.create({
-            name,
-            arabicName,
-            email,
-            faculty,
-            type,
-            committee,
-            img: result.secure_url,
-            phone,
-            linkedIn,
-            memberId,
+        // Use upload.single to handle single-file uploads
+        upload.single('file')(req, res, async function (err) {
+            if (err) {
+                return res.status(400).json({ error: err.message });
+            }
+
+            // Make sure that req.file is available before using it
+            if (!req.file) {
+                return res.status(400).json({ error: 'Image file is required.' });
+            }
+
+            const member = await Member.create({
+                name: req.body.name,
+                arabicName: req.body.arabicName,
+                email: req.body.email,
+                faculty: req.body.faculty,
+                type: req.body.type,
+                committee: req.body.committee,
+                img: req.file.filename,  // Use req.file to access the uploaded file
+                phone: req.body.phone,
+                linkedIn: req.body.linkedIn,
+                memberId: req.body.memberId,
+            });
+
+            res.status(200).json(member);
         });
-
-        // Remove the temporary file after upload
-        fs.unlinkSync(req.file.path);
-
-        res.status(200).json(member);
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
