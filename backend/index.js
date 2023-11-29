@@ -24,6 +24,17 @@ app.use((req, res, next) => {
 });
 
 
+
+const corsOptions = {
+    origin: 'https://issegypt.vercel.app',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+    optionsSuccessStatus: 204,
+};
+
+app.use(cors(corsOptions));
+
+
 // const allowCors = fn => async (req, res) => {
 //     res.setHeader('Access-Control-Allow-Credentials', true)
 //     res.setHeader('Access-Control-Allow-Origin', '*')
@@ -57,7 +68,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 console.log('MongoDB URI:', process.env.MONGO_URI);
 mongoose.connect(process.env.MONGO_URI, {})
     .then(() => {
-        console.log('connected to database');
+        console.log('connected to the database');
         // listen to port
         app.listen(process.env.PORT, () => {
             console.log('listening for requests on port', process.env.PORT);
