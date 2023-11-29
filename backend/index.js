@@ -4,35 +4,19 @@ const express = require('express');
 const mongoose = require('mongoose');
 const formRoutes = require('./routes/forms');
 const memberRoutes = require('./routes/members');
-const cors = require('cors');
+// const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
 
 // express app
 const app = express();
-app.use(cors());
+// app.use(cors());
 
 
 app.use(express.json());
 
-app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Origin', 'https://issegypt.vercel.app');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    next();
-});
 
 
-
-const corsOptions = {
-    origin: 'https://issegypt.vercel.app',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true,
-    optionsSuccessStatus: 204,
-};
-
-app.use(cors(corsOptions));
 
 
 // const allowCors = fn => async (req, res) => {
