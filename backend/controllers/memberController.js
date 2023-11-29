@@ -3,7 +3,7 @@ const mongoose = require('mongoose')
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
-const cloudinary = require('cloudinary').v2;
+import { v2 as cloudinary } from 'cloudinary';
 
 
 cloudinary.config({
@@ -61,10 +61,6 @@ const storage = cloudinaryStorage({
         format: async (req, file) => 'png', // Format of the image uploaded to Cloudinary
         public_id: (req, file) => 'uploads', // Unique name for the uploaded file
     },
-});
-
-const upload = multer({
-    storage: storage
 });
 
 
