@@ -34,7 +34,7 @@ const getMember = async (req, res) => {
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        const dir = '../uploads';
+        const dir = './uploads';
         if (!fs.existsSync(dir)) {
             fs.mkdirSync(dir, { recursive: true });
         }
@@ -47,7 +47,6 @@ const storage = multer.diskStorage({
 
 const upload = multer({
     storage: storage,
-    limits: { fileSize: 1024 * 1024 * 5 },
 });
 
 
@@ -83,7 +82,7 @@ const createMember = async (req, res) => {
                 faculty: req.body.faculty,
                 type: req.body.type,
                 committee: req.body.committee,
-                img: `/uploads/${req.file.filename}`,  // Use the correct path
+                img: req.file.filename,  // Use the correct path
                 phone: req.body.phone,
                 linkedIn: req.body.linkedIn,
                 memberId: req.body.memberId,
