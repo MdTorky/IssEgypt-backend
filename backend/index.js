@@ -17,46 +17,10 @@ app.use(express.json());
 
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Origin', 'https://issegypt.vercel.app');
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE');
     res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     next();
 });
-
-
-
-const corsOptions = {
-    origin: 'https://issegypt.vercel.app',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true,
-    optionsSuccessStatus: 204,
-};
-
-app.use(cors(corsOptions));
-
-
-// const allowCors = fn => async (req, res) => {
-//     res.setHeader('Access-Control-Allow-Credentials', true)
-//     res.setHeader('Access-Control-Allow-Origin', '*')
-//     // another common pattern
-//     // res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
-//     res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT')
-//     res.setHeader(
-//         'Access-Control-Allow-Headers',
-//         'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-//     )
-//     if (req.method === 'OPTIONS') {
-//         res.status(200).end()
-//         return
-//     }
-//     return await fn(req, res)
-// }
-
-// const handler = (req, res) => {
-//     const d = new Date()
-//     res.end(d.toString())
-// }
-// module.exports = allowCors(handler)
 
 
 // routes
