@@ -3,7 +3,7 @@ const mongoose = require('mongoose')
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
-
+const cloudinary = require("../utilities/cloudinary");
 
 
 
@@ -50,6 +50,8 @@ const upload = multer({
 });
 
 
+
+
 // const createMember = async (req, res) => {
 //     const { name, arabicName, email, faculty, type, committee, img, phone, linkedIn, memberId } = req.body
 
@@ -94,6 +96,81 @@ const createMember = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+
+
+
+
+
+
+
+
+
+// CLOUDINARY
+
+
+// const storage = multer.diskStorage({
+//     filename: function (req, file, cb) {
+//         cb(null, file.originalname)
+//     }
+// });
+
+// const upload = multer({ storage: storage });
+
+
+
+
+
+
+// const createMember = async (req, res) => {
+//     const { name, arabicName, email, faculty, type, committee, phone, linkedIn, memberId } = req.body;
+
+//     try {
+//         if (!req.file) {
+//             return res.status(400).json({ error: 'Image file is required.' });
+//         }
+
+//         cloudinary.uploader.upload(req.file.path, async function (err, result) {
+//             if (err) {
+//                 console.log(err);
+//                 return res.status(500).json({
+//                     success: false,
+//                     message: "Error"
+//                 });
+//             }
+
+//             const member = await Member.create({
+//                 name,
+//                 arabicName,
+//                 email,
+//                 faculty,
+//                 type,
+//                 committee,
+//                 img: result.secure_url,
+//                 phone,
+//                 linkedIn,
+//                 memberId,
+//             });
+
+//             res.status(200).json({
+//                 success: true,
+//                 message: "Uploaded!",
+//                 data: member
+//             });
+//         });
+//     } catch (error) {
+//         console.error('Error creating member:', error);
+//         res.status(500).json({ error: 'Internal Server Error' });
+//     }
+// };
+
+
+
+
+
+
+
+
 
 
 
