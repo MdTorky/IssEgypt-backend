@@ -33,10 +33,10 @@ const getIntern = async (req, res) => {
 
 
 const createIntern = async (req, res) => {
-    const { name, email, img, faculty, website, applyEmail, apply, categories } = req.body
+    const { name, email, img, faculty, website, applyEmail, apply, categories, location } = req.body
 
     try {
-        const form = await Intern.create({ name, email, img, faculty, website, applyEmail, apply, categories })
+        const form = await Intern.create({ name, email, img, faculty, website, applyEmail, apply, categories, location })
         res.status(200).json(form)
     } catch (error) {
         res.status(400).json({ error: error.message })

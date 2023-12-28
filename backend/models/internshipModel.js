@@ -28,6 +28,9 @@ const internSchema = new Schema({
     },
     categories: {
         type: [String],
+    },
+    location: {
+        type: [String],
     }
 }, { timestamps: true })
 
