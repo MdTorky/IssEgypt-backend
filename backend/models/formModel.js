@@ -3,26 +3,57 @@ const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 
 const formSchema = new Schema({
-    name: {
+    eventName: {
+        type: String,
+        // required: true
+    },
+    arabicEventName: {
+        type: String,
+        // required: true
+    },
+    eventImg: {
         type: String,
         required: true
     },
-    email: {
+    eventDescription: {
         type: String,
-        required: true
+        // required: true
     },
-    matric: {
+    sheetLink: {
         type: String,
-        required: true
+        // required: true
     },
-    faculty: {
+    type: {
         type: String,
-        required: true
+        // required: true
     },
-    suggestion: {
+    inputs: {
+        type: [String],
+    },
+    // name: {
+    //     type: Boolean,
+    // },
+    // matric: {
+    //     type: Boolean,
+    // },
+    // phone: {
+    //     type: Boolean,
+    // },
+    // email: {
+    //     type: Boolean,
+    // },
+    // faculty: {
+    //     type: Boolean,
+    // },
+    // year: {
+    //     type: Boolean,
+    // },
+    // semester: {
+    //     type: Boolean,
+    // },
+    groupLink: {
         type: String,
-        required: true
-    }
+    },
 }, { timestamps: true })
 
 module.exports = mongoose.model('Form', formSchema)

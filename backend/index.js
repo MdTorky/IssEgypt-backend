@@ -6,8 +6,10 @@ const formRoutes = require('./routes/forms');
 const memberRoutes = require('./routes/members');
 const internRoutes = require('./routes/internships');
 const cors = require('cors');
-const multer = require('multer');
+const Multer = require('multer');
 const path = require('path');
+// const errorHandler = require("./middleware/error");
+
 
 // express app
 const app = express();
