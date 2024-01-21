@@ -5,11 +5,11 @@ const Schema = mongoose.Schema
 const formSchema = new Schema({
     eventName: {
         type: String,
-        // required: true
+        required: true
     },
     arabicEventName: {
         type: String,
-        // required: true
+        required: true
     },
     eventImg: {
         type: String,
@@ -17,42 +17,26 @@ const formSchema = new Schema({
     },
     eventDescription: {
         type: String,
-        // required: true
-    },
-    sheetLink: {
-        type: String,
-        // required: true
+        required: true
     },
     type: {
         type: String,
-        // required: true
+        required: true
     },
     inputs: {
         type: [String],
     },
-    // name: {
-    //     type: Boolean,
-    // },
-    // matric: {
-    //     type: Boolean,
-    // },
-    // phone: {
-    //     type: Boolean,
-    // },
-    // email: {
-    //     type: Boolean,
-    // },
-    // faculty: {
-    //     type: Boolean,
-    // },
-    // year: {
-    //     type: Boolean,
-    // },
-    // semester: {
-    //     type: Boolean,
-    // },
+    customInputs: [{
+        type: String,
+    }],
     groupLink: {
         type: String,
+    },
+    paymentQR: {
+        type: String,
+    },
+    paymentAmount: {
+        type: Number,
     },
 }, { timestamps: true })
 

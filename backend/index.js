@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const formRoutes = require('./routes/forms');
 const memberRoutes = require('./routes/members');
 const internRoutes = require('./routes/internships');
+const issForms = require('./routes/issForms');
 const cors = require('cors');
 const Multer = require('multer');
 const path = require('path');
@@ -31,6 +32,7 @@ app.use(express.json());
 app.use('/api/forms', formRoutes);
 app.use('/api/member', memberRoutes);
 app.use('/api/internship', internRoutes);
+app.use('/api/issForms', issForms);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // app.use('/uploads', express.static('uploads'));
 // connect to db

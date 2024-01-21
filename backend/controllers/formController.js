@@ -51,7 +51,6 @@ const getForm = async (req, res) => {
 
 // const storage = multer.memoryStorage();
 // const upload = multer({ storage });
-const upload = multer({ storage: multer.memoryStorage() }).single('file');
 
 // const createForm = async (req, res) => {
 //     const { eventName, arabicEventName, eventImg, eventDescription, sheetLink, type, inputs, groupLink } = req.body
@@ -244,10 +243,10 @@ const upload = multer({ storage: multer.memoryStorage() }).single('file');
 
 
 const createForm = async (req, res) => {
-    const { eventImg } = req.body
+    const { eventName, arabicEventName, eventImg, eventDescription, type, inputs, groupLink, paymentQR, paymentAmount, customInputs } = req.body
 
     try {
-        const form = await Form.create({ eventImg })
+        const form = await Form.create({ eventName, arabicEventName, eventImg, eventDescription, type, inputs, groupLink, paymentQR, paymentAmount, customInputs })
         res.status(200).json(form)
     } catch (error) {
         res.status(400).json({ error: error.message })
