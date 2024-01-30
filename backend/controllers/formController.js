@@ -243,10 +243,10 @@ const getForm = async (req, res) => {
 
 
 const createForm = async (req, res) => {
-    const { eventName, arabicEventName, eventImg, eventDescription, type, inputs, groupLink, paymentQR, paymentAmount, customInputs } = req.body
+    const { eventName, arabicEventName, eventImg, eventDescription, type, inputs, groupLink, paymentQR, paymentAmount, customInputs, status } = req.body
 
     try {
-        const form = await Form.create({ eventName, arabicEventName, eventImg, eventDescription, type, inputs, groupLink, paymentQR, paymentAmount, customInputs })
+        const form = await Form.create({ eventName, arabicEventName, eventImg, eventDescription, type, inputs, groupLink, paymentQR, paymentAmount, customInputs, status })
         res.status(200).json(form)
     } catch (error) {
         res.status(400).json({ error: error.message })

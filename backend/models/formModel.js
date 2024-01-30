@@ -38,6 +38,9 @@ const formSchema = new Schema({
     paymentAmount: {
         type: Number,
     },
+    status: {
+        type: Boolean,
+    },
 }, { timestamps: true })
 
 module.exports = mongoose.model('Form', formSchema)

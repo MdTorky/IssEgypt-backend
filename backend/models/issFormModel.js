@@ -33,6 +33,9 @@ const issFormSchema = new Schema({
     semester: {
         type: String,
     },
+    picture: {
+        type: String,
+    },
     proof: {
         type: String,
     },
