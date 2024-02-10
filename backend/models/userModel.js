@@ -10,11 +10,6 @@ const userSchema = new Schema({
         required: true,
         unique: true
     },
-    // userName: {
-    //     type: String,
-    //     // required: true,
-    //     // unique: true
-    // },
     password: {
         type: String,
         required: true,
@@ -22,12 +17,17 @@ const userSchema = new Schema({
     committee: {
         type: String,
         required: true,
+        unique: true
+    },
+    type: {
+        type: String,
+        required: true,
     }
 })
 
 
 // static register method
-userSchema.statics.register = async function (email, password, committee) {
+userSchema.statics.register = async function (email, password, committee, type) {
 
     //validation
     if (!email || !password || !committee) {
@@ -43,10 +43,17 @@ userSchema.statics.register = async function (email, password, committee) {
     }
 
     const emailExists = await this.findOne({ email })
+
+    const committeeExists = await this.findOne({ committee })
+
     // const userNameExists = await this.findOne({ userName })
 
     if (emailExists) {
         throw Error('Email already in use')
+    }
+
+    if (committeeExists) {
+        throw Error('This Committee President already has an account')
     }
     // if (userNameExists) {
     //     throw Error('UserName already in use')
@@ -55,7 +62,7 @@ userSchema.statics.register = async function (email, password, committee) {
     const salt = await bcrypt.genSalt(10)
     const hash = await bcrypt.hash(password, salt)
 
-    const user = await this.create({ email, password: hash, committee })
+    const user = await this.create({ email, password: hash, committee, type })
 
     return user
 

@@ -17,8 +17,10 @@ const loginUser = async (req, res) => {
 
         // Create a token
         const token = createToken(user._id)
+        const committee = user.committee
+        const type = user.type
 
-        res.status(200).json({ email, token })
+        res.status(200).json({ email, token, committee, type })
     } catch (error) {
         res.status(400).json({ error: error.message })
     }
@@ -29,15 +31,17 @@ const loginUser = async (req, res) => {
 
 const registerUser = async (req, res) => {
 
-    const { email, password, committee } = req.body
+    const { email, password, committee, type } = req.body
 
     try {
-        const user = await User.register(email, password, committee)
+        const user = await User.register(email, password, committee, type)
 
         // Create a token
         const token = createToken(user._id)
+        // const committee = user.committee
+        // const type = user.type
 
-        res.status(200).json({ email, token })
+        res.status(200).json({ email, token, committee, type })
     } catch (error) {
         res.status(400).json({ error: error.message })
     }

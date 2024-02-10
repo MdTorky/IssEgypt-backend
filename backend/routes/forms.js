@@ -7,10 +7,11 @@ const {
     deleteForm,
     updateForm
 } = require('../controllers/formController')
-const parser = require("../middleware/cloudinary.config");
+const requireAuth = require('../middleware/requireAuth')
 const router = express.Router()
 
-const ImageUploadRouter = require("express").Router();
+
+// router.use(requireAuth)
 
 // GET all workouts
 router.get('/', getForms)
