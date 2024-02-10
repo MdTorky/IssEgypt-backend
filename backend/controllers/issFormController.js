@@ -47,16 +47,35 @@ const createForm = async (req, res) => {
 const deleteForm = async (req, res) => {
     const { id } = req.params
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(404).json({ error: "No Such Form" })
-    }
+    // if (!mongoose.Types.ObjectId.isValid(id)) {
+    //     return res.status(404).json({ error: "No Such Form" })
+    // }
 
 
-    const form = await ISSForms.findOneAndDelete({ _id: id })
-    if (!form) {
-        return res.status(404).json({ error: "No Such Form" })
+    // const form = await ISSForms.findOneAndDelete({ eventId: id })
+    // if (!form) {
+    //     return res.status(404).json({ error: "No Such Form" })
+    // }
+    // res.status(200).json(form)
+
+    try {
+        // Find the form by ID
+        // const form = await ISSForms.findById(id);
+        // if (!form) {
+        //     return res.status(404).json({ error: "No Such Form" });
+        // }
+
+        // Delete responses associated with the ISSForm's eventId
+        const form = await ISSForms.deleteMany({ eventID: id });
+
+        // Delete the ISSForm
+        // await ISSForms.findByIdAndDelete(id);
+
+        res.status(200).json(form);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
-    res.status(200).json(form)
+
 }
 
 
