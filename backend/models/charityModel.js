@@ -34,6 +34,15 @@ const charitySchema = new Schema({
     },
     file: {
         type: String,
+    },
+    name: {
+        type: String,
+    },
+    condition: {
+        type: String,
+    },
+    status: {
+        type: String,
     }
 }, { timestamps: true });
 

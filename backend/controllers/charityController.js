@@ -33,11 +33,11 @@ const getForm = async (req, res) => {
 
 
 const createForm = async (req, res) => {
-    const { faculty, semester, course, advice, links, industrial, file } = req.body;
+    const { faculty, semester, course, advice, links, industrial, file, name, condition, status } = req.body;
 
     try {
         // Create a new Charity document with the extracted properties
-        const form = await Charity.create({ faculty, semester, course, advice, links, industrial, file });
+        const form = await Charity.create({ faculty, semester, course, advice, links, industrial, file, name, condition, status });
 
         // Respond with the created form
         res.status(200).json(form);
