@@ -32,22 +32,22 @@ const getMember = async (req, res) => {
 }
 
 
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        const dir = './uploads';
-        if (!fs.existsSync(dir)) {
-            fs.mkdirSync(dir, { recursive: true });
-        }
-        cb(null, dir);
-    },
-    filename: function (req, file, cb) {
-        cb(null, new Date().toISOString().replace(/:/g, '-') + file.originalname);
-    },
-});
+// const storage = multer.diskStorage({
+//     destination: (req, file, cb) => {
+//         const dir = './uploads';
+//         if (!fs.existsSync(dir)) {
+//             fs.mkdirSync(dir, { recursive: true });
+//         }
+//         cb(null, dir);
+//     },
+//     filename: function (req, file, cb) {
+//         cb(null, new Date().toISOString().replace(/:/g, '-') + file.originalname);
+//     },
+// });
 
-const upload = multer({
-    storage: storage,
-});
+// const upload = multer({
+//     storage: storage,
+// });
 
 
 
@@ -63,39 +63,50 @@ const upload = multer({
 //     }
 // }
 
-const createMember = async (req, res) => {
-    const { name, arabicName, email, faculty, type, committee, phone, linkedIn, memberId } = req.body;
+// const createMember = async (req, res) => {
+//     const { name, arabicName, email, faculty, type, committee, phone, linkedIn, memberId } = req.body;
+//     try {
+//         upload.single('file')(req, res, async function (err) {
+//             if (err) {
+//                 return res.status(400).json({ error: err.message });
+//             }
+
+//             if (!req.file) {
+//                 return res.status(400).json({ error: 'Image file is required.' });
+//             }
+
+//             const member = await Member.create({
+//                 name: req.body.name,
+//                 arabicName: req.body.arabicName,
+//                 email: req.body.email,
+//                 faculty: req.body.faculty,
+//                 type: req.body.type,
+//                 committee: req.body.committee,
+//                 img: req.file.filename,  
+//                 phone: req.body.phone,
+//                 linkedIn: req.body.linkedIn,
+//                 memberId: req.body.memberId,
+//             });
+
+//             res.status(200).json(member);
+//         });
+//     } catch (error) {
+//         res.status(500).json({ error: error.message });
+//     }
+// };
+
+const createForm = async (req, res) => {
+    const { name, arabicName, email, faculty, type, committee, img, phone, linkedIn, memberId } = req.body;
+
     try {
-        // Use upload.single to handle single-file uploads
-        upload.single('file')(req, res, async function (err) {
-            if (err) {
-                return res.status(400).json({ error: err.message });
-            }
-
-            // Make sure that req.file is available before using it
-            if (!req.file) {
-                return res.status(400).json({ error: 'Image file is required.' });
-            }
-
-            const member = await Member.create({
-                name: req.body.name,
-                arabicName: req.body.arabicName,
-                email: req.body.email,
-                faculty: req.body.faculty,
-                type: req.body.type,
-                committee: req.body.committee,
-                img: req.file.filename,  // Use the correct path
-                phone: req.body.phone,
-                linkedIn: req.body.linkedIn,
-                memberId: req.body.memberId,
-            });
-
-            res.status(200).json(member);
-        });
+        const form = await Member.create({ name, arabicName, email, faculty, type, committee, img, phone, linkedIn, memberId });
+        res.status(200).json(form);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        // Handle errors
+        console.error('Error creating form:', error);
+        res.status(400).json({ error: error.message });
     }
-};
+}
 
 
 
