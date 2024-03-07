@@ -95,7 +95,7 @@ const getMember = async (req, res) => {
 //     }
 // };
 
-const createForm = async (req, res) => {
+const createMember = async (req, res) => {
     const { name, arabicName, email, faculty, type, committee, img, phone, linkedIn, memberId } = req.body;
 
     try {
