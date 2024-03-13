@@ -18,6 +18,7 @@ const charitySchema = new Schema({
     },
     semester: {
         type: String,
+        // required: true
     },
     course: {
         type: String,
