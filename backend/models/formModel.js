@@ -41,6 +41,9 @@ const formSchema = new Schema({
     status: {
         type: Boolean,
     },
+    limit: {
+        type: Number,
+    },
 }, { timestamps: true })
 
 module.exports = mongoose.model('Form', formSchema)
