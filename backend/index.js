@@ -11,6 +11,7 @@ const FacultyRoutes = require('./routes/faculty');
 const CourseRoutes = require('./routes/course');
 const CharityRoutes = require('./routes/charity');
 const PointRoutes = require('./routes/point');
+const BookRoutes = require('./routes/book');
 const cors = require('cors');
 const Multer = require('multer');
 const path = require('path');
@@ -43,6 +44,7 @@ app.use('/api/faculty', FacultyRoutes);
 app.use('/api/course', CourseRoutes);
 app.use('/api/charity', CharityRoutes);
 app.use('/api/point', PointRoutes);
+app.use('/api/book', BookRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // app.use('/uploads', express.static('uploads'));
 // connect to db
