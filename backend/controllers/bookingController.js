@@ -6,9 +6,9 @@ const schedule = require('node-schedule');
 dotenv.config();
 
 
-const accountSid = process.env.TWILIO_ACCOUNT_SID;
-const authToken = process.env.TWILIO_AUTH_TOKEN;
-const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
+const accountSid = process.env.ACCOUNT_SID;
+const authToken = process.env.AUTH_TOKEN;
+const twilioPhoneNumber = process.env.PHONE_NUMBER;
 const client = require('twilio')(accountSid, authToken);
 
 
