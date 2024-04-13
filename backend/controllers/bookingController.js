@@ -173,5 +173,4 @@ module.exports = {
     getForm,
     deleteForm,
     updateForm,
-    sendMessage
 }
