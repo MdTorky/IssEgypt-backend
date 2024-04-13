@@ -77,7 +77,7 @@ const sendMessage = () => {
         to: 'whatsapp:+601121792872'
     })
         .then(message => console.log(message.sid))
-        .catch(error => console.error('Error sending WhatsApp message:', error));
+        .done();
 }
 
 const getForms = async (req, res) => {
