@@ -6,62 +6,61 @@ const schedule = require('node-schedule');
 dotenv.config();
 
 
-const accountSid = process.env.ACCOUNT_SID;
-const authToken = process.env.AUTH_TOKEN;
-const twilioPhoneNumber = process.env.PHONE_NUMBER;
-const client = require('twilio')(accountSid, authToken);
+// const accountSid = process.env.ACCOUNT_SID;
+// const authToken = process.env.AUTH_TOKEN;
+// const twilioPhoneNumber = process.env.PHONE_NUMBER;
+// const client = require('twilio')(accountSid, authToken);
+
+
+// const sendWhatsAppMessage = async (to, message, bookingId) => {
+//     try {
+//         // Construct the link with the booking ID
+//         const extendLink = `https://issegypt.vercel.app/extendTime/${bookingId}`;
+//         const fullMessage = `${message} ${extendLink}`;
+//         console.log(fullMessage);
+//         await client.messages.create({
+//             body: fullMessage,
+//             from: `whatsapp:${twilioPhoneNumber}`,
+//             to: `whatsapp:${to}`
+//         });
+//         console.log('WhatsApp message sent successfully.');
+//     } catch (error) {
+//         console.error('Error sending WhatsApp message:', error);
+//     }
+// };
 
 
 
-const sendWhatsAppMessage = async (to, message, bookingId) => {
-    try {
-        // Construct the link with the booking ID
-        const extendLink = `https://issegypt.vercel.app/extendTime/${bookingId}`;
-        const fullMessage = `${message} ${extendLink}`;
-        console.log(fullMessage);
-        await client.messages.create({
-            body: fullMessage,
-            from: `whatsapp:${twilioPhoneNumber}`,
-            to: `whatsapp:${to}`
-        });
-        console.log('WhatsApp message sent successfully.');
-    } catch (error) {
-        console.error('Error sending WhatsApp message:', error);
-    }
-};
+// const reminderTask = cron.schedule('* * * * *', async () => {
+//     console.log("Running Tasks")
 
+//     try {
+//         // Get all bookings with return dates for tomorrow
+//         const tomorrow = new Date();
+//         tomorrow.setDate(tomorrow.getDate() + 1);
+//         const forms = await Booking.find({ reserverDate: tomorrow });
 
+//         forms.forEach(async (form) => {
+//             console.log("foind")
+//             // Send WhatsApp reminder message
+//             const message = `Hello ${form.reserverName},ISS Egypt here, just a friendly reminder that you need to return the book tomorrow. Your Key is ${form.reserverPassword}Click here to extend the time:`;
+//             const bookingId = form._id; // Assuming the booking ID is stored in _id field
 
-const reminderTask = cron.schedule('* * * * *', async () => {
-    console.log("Running Tasks")
+//             await sendWhatsAppMessage(form.reserverPhone, message, bookingId);
+//             console.log('Reminder messages sent successfully.');
+//         });
 
-    try {
-        // Get all bookings with return dates for tomorrow
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        const forms = await Booking.find({ reserverDate: tomorrow });
+//     } catch (error) {
+//         console.error('Error sending reminder messages:', error);
+//     }
+// });
 
-        forms.forEach(async (form) => {
-            console.log("foind")
-            // Send WhatsApp reminder message
-            const message = `Hello ${form.reserverName},ISS Egypt here, just a friendly reminder that you need to return the book tomorrow. Your Key is ${form.reserverPassword}Click here to extend the time:`;
-            const bookingId = form._id; // Assuming the booking ID is stored in _id field
+// reminderTask.start(); // Start the cron job
 
-            await sendWhatsAppMessage(form.reserverPhone, message, bookingId);
-            console.log('Reminder messages sent successfully.');
-        });
-
-    } catch (error) {
-        console.error('Error sending reminder messages:', error);
-    }
-});
-
-reminderTask.start(); // Start the cron job
-
-// Ensure the cron job stops when the script exits
-process.on('exit', () => {
-    reminderTask.stop();
-});
+// // Ensure the cron job stops when the script exits
+// process.on('exit', () => {
+//     reminderTask.stop();
+// });
 
 
 
@@ -71,15 +70,15 @@ const job = cron.schedule('* * * * * *', () => {
     // sendMessage()
 })
 
-const sendMessage = () => {
-    client.messages.create({
-        body: 'Hello',
-        from: 'whatsapp:+14155238886',
-        to: 'whatsapp:+601121792872'
-    })
-        .then(message => console.log(message.sid))
-        .catch(error => console.error('Error sending WhatsApp message:', error));
-}
+// const sendMessage = () => {
+//     client.messages.create({
+//         body: 'Hello',
+//         from: 'whatsapp:+14155238886',
+//         to: 'whatsapp:+601121792872'
+//     })
+//         .then(message => console.log(message.sid))
+//         .catch(error => console.error('Error sending WhatsApp message:', error));
+// }
 
 const getForms = async (req, res) => {
     const forms = await Booking.find({}).sort({ createdAt: -1 })
