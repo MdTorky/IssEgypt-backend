@@ -1,8 +1,8 @@
 const Booking = require('../models/bookingModel')
 const mongoose = require('mongoose')
 const dotenv = require("dotenv");
-const cron = require('node-cron');
-const schedule = require('node-schedule');
+// const cron = require('node-cron');
+// const schedule = require('node-schedule');
 dotenv.config();
 
 
@@ -64,11 +64,11 @@ dotenv.config();
 
 
 
-const job = cron.schedule('* * * * * *', () => {
-    // const extendLink = `https://issegypt.vercel.app/extendTime/${bookingId}`;
-    // 
-    // sendMessage()
-})
+// const job = cron.schedule('* * * * * *', () => {
+// const extendLink = `https://issegypt.vercel.app/extendTime/${bookingId}`;
+// 
+// sendMessage()
+// })
 
 // const sendMessage = () => {
 //     client.messages.create({
