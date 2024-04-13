@@ -1,15 +1,15 @@
 const Booking = require('../models/bookingModel')
 const mongoose = require('mongoose')
 const dotenv = require("dotenv");
-// const cron = require('node-cron');
-// const schedule = require('node-schedule');
+const cron = require('node-cron');
+const schedule = require('node-schedule');
 dotenv.config();
 
 
-// const accountSid = process.env.ACCOUNT_SID;
-// const authToken = process.env.AUTH_TOKEN;
-// const twilioPhoneNumber = process.env.PHONE_NUMBER;
-// const client = require('twilio')(accountSid, authToken);
+const accountSid = process.env.ACCOUNT_SID;
+const authToken = process.env.AUTH_TOKEN;
+const twilioPhoneNumber = process.env.PHONE_NUMBER;
+const client = require('twilio')(accountSid, authToken);
 
 
 // const sendWhatsAppMessage = async (to, message, bookingId) => {
@@ -70,15 +70,15 @@ dotenv.config();
 // sendMessage()
 // })
 
-// const sendMessage = () => {
-//     client.messages.create({
-//         body: 'Hello',
-//         from: 'whatsapp:+14155238886',
-//         to: 'whatsapp:+601121792872'
-//     })
-//         .then(message => console.log(message.sid))
-//         .catch(error => console.error('Error sending WhatsApp message:', error));
-// }
+const sendMessage = () => {
+    client.messages.create({
+        body: 'Hello',
+        from: 'whatsapp:+14155238886',
+        to: 'whatsapp:+601121792872'
+    })
+        .then(message => console.log(message.sid))
+        .catch(error => console.error('Error sending WhatsApp message:', error));
+}
 
 const getForms = async (req, res) => {
     const forms = await Booking.find({}).sort({ createdAt: -1 })
@@ -173,4 +173,5 @@ module.exports = {
     getForm,
     deleteForm,
     updateForm,
+    sendMessage
 }

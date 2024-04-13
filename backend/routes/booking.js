@@ -6,7 +6,7 @@ const {
     getForm,
     deleteForm,
     updateForm,
-    // sendMessage
+    sendMessage
 } = require('../controllers/bookingController')
 const router = express.Router()
 
@@ -14,7 +14,7 @@ const router = express.Router()
 
 // GET all workouts
 router.get('/', getForms)
-// router.post('/sendMessage/testing', sendMessage)
+router.post('/sendMessage/testing', sendMessage)
 
 // GET a single workout
 router.get('/:id', getForm)
