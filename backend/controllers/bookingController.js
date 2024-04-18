@@ -11,7 +11,7 @@ dotenv.config();
 
 
 const reminderTask = cron.schedule('* * * * *', async () => { // This runs the task every second
-    console.log("Running Tasks")
+    // console.log("Running Tasks")
 
     try {
         const today = new Date();
@@ -63,8 +63,8 @@ const sendMessage = async (form, book) => {
         var transporter = nodemailer.createTransport({
             service: 'gmail',
             auth: {
-                user: 'issegypt.academic@gmail.com',
-                pass: 'duea uvwi yebk bfve'
+                user: process.env.USER_EMAIL,
+                pass: process.env.USER_PASSWORD
 
             }
         });
@@ -369,8 +369,7 @@ const sendMessage = async (form, book) => {
                               align="left">
 
                               <div style="font-size: 14px; line-height: 140%; text-align: left; word-wrap: break-word;">
-                                <p style="line-height: 140%;">This email is a reminder to return the book you booked
-                                  from the ISS library back to the library</p>
+                                <p style="line-height: 140%;">This email is a reminder to return the book you reserved from the ISS library to the library before tomorrow.</p>
                               </div>
 
                             </td>
@@ -475,9 +474,7 @@ const sendMessage = async (form, book) => {
                               align="left">
 
                               <div style="font-size: 14px; line-height: 140%; text-align: left; word-wrap: break-word;">
-                                <p style="line-height: 140%;"><span style="line-height: 19.6px;">If you want to request
-                                    to extend the return date please click on the link below and use the one time
-                                    password provided</span></p>
+                                <p style="line-height: 140%;"><span style="line-height: 19.6px;">If you wish to request to extend the return date, please click the link on the right and enter the one-time password provided.</span></p>
                               </div>
 
                             </td>
@@ -649,7 +646,7 @@ const sendMessage = async (form, book) => {
 
                               <div style="font-size: 14px; line-height: 140%; text-align: left; word-wrap: break-word;">
                                 <p style="line-height: 140%;"><em><span style="line-height: 19.6px;">If you have any
-                                      questions don't hesitate to ask us on this number</span></em></p>
+                                      questions, don't hesitate to contact us on this number</span></em></p>
                               </div>
 
                             </td>
@@ -705,7 +702,13 @@ const sendMessage = async (form, book) => {
                 <div class="u-col u-col-100"
                   style="max-width: 320px;min-width: 500px;display: table-cell;vertical-align: top;">
                   <div
-                    style="background-color: #da0037;height: 100%;width: 100% !important;border-radius: 0px;-webkit-border-radius: 0px; -moz-border-radius: 0px;">
+                    style="display: flex;
+                    align-items: center;
+                    justify-content: space-around;
+                    background-color: #da0037;height: 100%;width: 100% !important;border-radius: 0px;-webkit-border-radius: 0px; -moz-border-radius: 0px;">
+                    <p
+                      style="padding: 0 10px; width: 300px; font-family:arial,helvetica,sans-serif; font-weight: 900; color: #fff;">
+                      Connect With Us</p>
 
                     <div
                       style="box-sizing: border-box; height: 100%; padding: 0px;border-top: 0px solid transparent;border-left: 0px solid transparent;border-right: 0px solid transparent;border-bottom: 0px solid transparent;border-radius: 0px;-webkit-border-radius: 0px; -moz-border-radius: 0px;">
@@ -798,7 +801,10 @@ const sendMessage = async (form, book) => {
 `;
 
         var mailOptions = {
-            from: 'issegypt.academic@gmail.com',
+            from: {
+                name: "ISS Egypt UTM",
+                address: process.env.USER_EMAIL
+            },
             to: form.reserverEmail,
             subject: 'ISS EGYPT - Reminder to Return the Book!',
             html: html
