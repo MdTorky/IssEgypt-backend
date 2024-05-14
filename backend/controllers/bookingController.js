@@ -1,5 +1,4 @@
 const Booking = require('../models/bookingModel')
-const Book = require('../models/bookModel')
 const mongoose = require('mongoose')
 const dotenv = require("dotenv");
 const cron = require('node-cron');
@@ -9,88 +8,161 @@ var nodemailer = require('nodemailer');
 dotenv.config();
 
 
+// const job = cron.schedule('* * * * * *', () => {
+// const extendLink = `https://issegypt.vercel.app/extendTime/${bookingId}`;
+// 
+// sendMessage()
+// })
 
-const reminderTask = cron.schedule('* * * * *', async () => { // This runs the task every second
-    // console.log("Running Tasks")
+// const sendMessage = () => {
+//     const fullMessage = "Hello Testing again and Again"
+//     client.messages
 
-    try {
-        const today = new Date();
-        const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
-        // console.log('Tomorrow:', tomorrow);
-
-        // const forms = await Booking.find({ reserverDate: tomorrow });
-        const forms = await Booking.find({
-            reserverDate: {
-                $gte: tomorrow,
-                $lt: new Date(tomorrow.getTime() + 24 * 60 * 60 * 1000) // Next day's midnight
-            }
-        });
-
-        const bookIds = forms.map(form => form.bookId);
-        const books = await Book.find({ _id: { $in: bookIds } });
-        // console.log('Forms:', forms);
-
-        // forms.forEach(async (form) => {
-        //     await sendMessage(form)
-        //     console.log('Reminder messages sent successfully.');
-        // });
-
-        forms.forEach(async form => {
-            const book = books.find(book => book._id.toString() === form.bookId.toString());
-            if (book) {
-                await sendMessage(form, book);
-                console.log('Reminder messages sent successfully.');
-            } else {
-                console.error('Book not found for form:', form);
-            }
-        });
-
-    } catch (error) {
-        console.error('Error sending reminder messages:', error);
-    }
-});
-
-reminderTask.start();
-
-process.on('exit', () => {
-    reminderTask.stop();
-});
+//         .create({
+//             from: 'whatsapp:+14155238886',
+//             body: fullMessage,
+//             to: 'whatsapp:+601121792872'
+//         })
+//         .then(message => console.log(message.sid));
+//     // .catch(error => console.error('Error sending WhatsApp message:', error));
+// }
 
 
-const sendMessage = async (form, book) => {
-    try {
+// const reminderTask = cron.schedule('* * * * *', async () => {
+//     console.log("Running Tasks")
 
-        var transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-                user: process.env.USER_EMAIL,
-                pass: process.env.USER_PASSWORD
+//     try {
+//         const tomorrow = new Date();
+//         tomorrow.setDate(tomorrow.getDate() + 1);
+//         const forms = await Booking.find({ reserverDate: tomorrow });
 
-            }
-        });
+//         forms.forEach(async (form) => {
+//             await sendMessage(form)
+//             // const message = `Hello ${form.reserverName},ISS Egypt here, just a friendly reminder that you need to return the book tomorrow. Your Key is ${form.reserverPassword}Click here to extend the time:`;
+//             // const message = `Hello ISS Egypt here, just a friendly reminder that you need to return the book tomorrow. Your Key is Click here to extend the time:`;
+//             // const bookingId = form._id; // Assuming the booking ID is stored in _id field
+//             // const bookingId = 'dsfas'; // Assuming the booking ID is stored in _id field
 
-        function formatDateTime(dateTime) {
-            const date = new Date(dateTime);
-            const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+//             console.log('Reminder messages sent successfully.');
+//         });
 
-            const month = months[date.getMonth()];
-            const day = date.getDate();
-            const year = date.getFullYear();
+//     } catch (error) {
+//         console.error('Error sending reminder messages:', error);
+//     }
+// });
 
-            let hours = date.getHours();
-            const minutes = date.getMinutes();
-            const ampm = hours >= 12 ? 'PM' : 'AM';
+// reminderTask.start();
 
-            hours = hours % 12;
-            hours = hours ? hours : 12; // Handle midnight (0 hours)
+// process.on('exit', () => {
+//     reminderTask.stop();
+// });
 
-            const formattedTime = `${hours}:${minutes.toString().padStart(2, '0')}${ampm}`;
+// const reminderTask = cron.schedule('* * * * * *', async () => { // This runs the task every second
+//     console.log("Running Tasks")
 
-            return `${month} ${day}, ${year} - ${formattedTime}`;
-        }
+//     try {
+//         const today = new Date();
+//         // const tomorrow = new Date(today.getDate() + 1); // Add 24 hours to get tomorrow's date
+//         // const tomorrow = new Date(today.getDate());
+//         const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+//         // const tomorrow = today.setDate(today.getDate() + 1);
+//         console.log('Tomorrow:', tomorrow);
+
+//         // const forms = await Booking.find({ reserverDate: tomorrow });
+//         const forms = await Booking.find({
+//             reserverDate: {
+//                 $gte: tomorrow,
+//                 $lt: new Date(tomorrow.getTime() + 24 * 60 * 60 * 1000) // Next day's midnight
+//             }
+//         });
+//         console.log('Forms:', forms);
+
+//         forms.forEach(async (form) => {
+//             // await sendMessage(form)
+//             console.log('Reminder messages sent successfully.');
+//         });
+
+//     } catch (error) {
+//         console.error('Error sending reminder messages:', error);
+//     }
+// });
+
+// const reminderTask = cron.schedule('* * * * * *', async () => {
+//     console.log("Running Tasks");
+
+//     try {
+//         const today = new Date();
+//         const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000); // Yesterday's date
+
+//         console.log('Tomorrow:', tomorrow);
+
+//         const forms = await Booking.find({
+//             reserverDate: {
+//                 $gte: tomorrow, // Bookings from tomorrow onwards (inclusive)
+//                 $lt: today, // Bookings strictly before today (excluding today)
+//             }
+//         });
+//         console.log('Forms:', forms);
+
+//         forms.forEach(async (form) => {
+//             // await sendMessage(form) // Assuming sendMessage sends the reminder
+//             console.log('Reminder messages sent successfully.');
+//         });
+//     } catch (error) {
+//         console.error('Error sending reminder messages:', error);
+//     }
+// });
 
 
-        var html = `
+// const reminderTask = cron.schedule('* * * * * *', async () => { // This runs the task every second
+//   console.log("Running Tasks")
+
+//   try {
+//     let today = new Date();
+//     // Change the date by adding 1 to it (today + 1 = tomorrow)
+//     today.setDate(today.getDate() + 1);
+//     // return yyyy-mm-dd format
+//     // const tomorrow = today.toISOString().split('T')[0];
+//     const tomorrow = today;
+//     console.log('Tomorrow:', tomorrow);
+
+//     const forms = await Booking.find({
+//       reserverDate: {
+//         $gte: tomorrow,
+//       }
+//     });
+//     console.log('Forms:', forms);
+
+//     forms.forEach(async (form) => {
+//       // await sendMessage(form)
+//       console.log('Reminder messages sent successfully.');
+//     });
+
+//   } catch (error) {
+//     console.error('Error sending reminder messages:', error);
+//   }
+// });
+// reminderTask.start();
+
+// process.on('exit', () => {
+//   reminderTask.stop();
+// });
+
+
+const sendMessage = async (form) => {
+  try {
+
+    var transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: 'issegypt.academic@gmail.com',
+        pass: 'duea uvwi yebk bfve'
+
+      }
+    });
+
+
+    var html = `
 <!DOCTYPE HTML
   PUBLIC "-//W3C//DTD XHTML 1.0 Transitional //EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml"
@@ -234,7 +306,7 @@ const sendMessage = async (form, book) => {
                                 <tr>
                                   <td style="padding-right: 0px;padding-left: 0px;" align="center">
                                     <a href="https://issegypt.vercel.app/" target="_blank">
-                                      <img align="center" border="0" src='https://res.cloudinary.com/dmv4mxgn5/image/upload/v1713476037/icons/logo_xtrdek.png' alt="ISS Egypt"
+                                      <img align="center" border="0" src=${'../images/logo.png'} alt="ISS Egypt"
                                         title="ISS Egypt"
                                         style="outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;clear: both;display: inline-block !important;border: none;height: auto;float: none;width: 100%;max-width: 146.67px;"
                                         width="146.67" />
@@ -369,7 +441,8 @@ const sendMessage = async (form, book) => {
                               align="left">
 
                               <div style="font-size: 14px; line-height: 140%; text-align: left; word-wrap: break-word;">
-                                <p style="line-height: 140%;">This email is a reminder to return the book you reserved from the ISS library to the library before tomorrow.</p>
+                                <p style="line-height: 140%;">This email is a reminder to return the book you booked
+                                  from the ISS library back to the library</p>
                               </div>
 
                             </td>
@@ -430,8 +503,8 @@ const sendMessage = async (form, book) => {
 
                               <div style="font-size: 17px; line-height: 140%; text-align: left; word-wrap: break-word;">
                                 <ul>
-                                  <li style="line-height: 23.8px;">Book Name: <b> ${book.bookName} </b></li>
-                                  <li style="line-height: 23.8px;">Return Date: <b> ${formatDateTime(form.reserverDate)}</b></li>
+                                  <li style="line-height: 23.8px;">Book Name: </li>
+                                  <li style="line-height: 23.8px;">Return Date: </li>
                                 </ul>
                               </div>
 
@@ -474,7 +547,9 @@ const sendMessage = async (form, book) => {
                               align="left">
 
                               <div style="font-size: 14px; line-height: 140%; text-align: left; word-wrap: break-word;">
-                                <p style="line-height: 140%;"><span style="line-height: 19.6px;">If you wish to request to extend the return date, please click the link on the right and enter the one-time password provided.</span></p>
+                                <p style="line-height: 140%;"><span style="line-height: 19.6px;">If you want to request
+                                    to extend the return date please click on the link below and use the one time
+                                    password provided</span></p>
                               </div>
 
                             </td>
@@ -522,7 +597,7 @@ const sendMessage = async (form, book) => {
                                 style="font-size: 14px; font-weight: 400; color: #f5f3f3; line-height: 140%; text-align: center; word-wrap: break-word;">
                                 <p style="line-height: 140%;">Your One Time Password is</p>
                               </div>
-                                
+
                             </td>
                           </tr>
                         </tbody>
@@ -538,7 +613,7 @@ const sendMessage = async (form, book) => {
 
                               <div
                                 style="font-size: 14px; font-weight: 700; color: #ffffff; line-height: 140%; text-align: center; word-wrap: break-word;">
-                                <p style="line-height: 140%;">${form.reserverPassword}</p>
+                                <p style="line-height: 140%;">PASSWORD HERE</p>
                               </div>
 
                             </td>
@@ -571,7 +646,7 @@ const sendMessage = async (form, book) => {
 
                               <div align="center">
 
-                              <a href=${`https://issegypt.vercel.app/extendTime/${form._id}`}
+                                <a href="https://translate.google.com/?source=gtx&sl=ar&tl=en&op=translate"
                                   target="_blank" class="v-button"
                                   style="box-sizing: border-box;display: inline-block;text-decoration: none;-webkit-text-size-adjust: none;text-align: center;color: #FFFFFF; background-color: #da0037; border-radius: 6px;-webkit-border-radius: 6px; -moz-border-radius: 6px; width:auto; max-width:100%; overflow-wrap: break-word; word-break: break-word; word-wrap:break-word; mso-border-alt: none;font-size: 14px;font-weight: 700; ">
                                   <span style="display:block;padding:10px 20px;line-height:120%;"><span
@@ -646,7 +721,7 @@ const sendMessage = async (form, book) => {
 
                               <div style="font-size: 14px; line-height: 140%; text-align: left; word-wrap: break-word;">
                                 <p style="line-height: 140%;"><em><span style="line-height: 19.6px;">If you have any
-                                      questions, don't hesitate to contact us on this number</span></em></p>
+                                      questions don't hesitate to ask us on this number</span></em></p>
                               </div>
 
                             </td>
@@ -665,7 +740,7 @@ const sendMessage = async (form, book) => {
 
                               <div align="center">
 
-                                <a href=${`http://wa.me/+201554206775`}
+                                <a href="https://translate.google.com/?source=gtx&sl=ar&tl=en&op=translate"
                                   target="_blank" class="v-button"
                                   style="box-sizing: border-box;display: inline-block;text-decoration: none;-webkit-text-size-adjust: none;text-align: center;color: #FFFFFF; background-color: #bbbbbb; border-radius: 6px;-webkit-border-radius: 6px; -moz-border-radius: 6px; width:auto; max-width:100%; overflow-wrap: break-word; word-break: break-word; word-wrap:break-word; mso-border-alt: none;font-size: 14px;font-weight: 700; ">
                                   <span style="display:block;padding:10px 20px;line-height:120%;"><span
@@ -702,13 +777,7 @@ const sendMessage = async (form, book) => {
                 <div class="u-col u-col-100"
                   style="max-width: 320px;min-width: 500px;display: table-cell;vertical-align: top;">
                   <div
-                    style="display: flex;
-                    align-items: center;
-                    justify-content: space-around;
-                    background-color: #da0037;height: 100%;width: 100% !important;border-radius: 0px;-webkit-border-radius: 0px; -moz-border-radius: 0px;">
-                    <p
-                      style="padding: 0 10px; width: 300px; font-family:arial,helvetica,sans-serif; font-weight: 900; color: #fff;">
-                      Connect With Us</p>
+                    style="background-color: #da0037;height: 100%;width: 100% !important;border-radius: 0px;-webkit-border-radius: 0px; -moz-border-radius: 0px;">
 
                     <div
                       style="box-sizing: border-box; height: 100%; padding: 0px;border-top: 0px solid transparent;border-left: 0px solid transparent;border-right: 0px solid transparent;border-bottom: 0px solid transparent;border-radius: 0px;-webkit-border-radius: 0px; -moz-border-radius: 0px;">
@@ -736,7 +805,7 @@ const sendMessage = async (form, book) => {
                                           style="word-break: break-word;border-collapse: collapse !important;vertical-align: top">
                                           <a href="https://www.instagram.com/issegypt/" title="Instagram"
                                             target="_blank">
-                                            <img src="https://res.cloudinary.com/dmv4mxgn5/image/upload/v1713476650/icons/instagram_uozpif.png" alt="Instagram" title="Instagram" width="32"
+                                            <img src="images/image-3.png" alt="Instagram" title="Instagram" width="32"
                                               style="outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;clear: both;display: block !important;border: none;height: auto;float: none;max-width: 32px !important">
                                           </a>
                                         </td>
@@ -751,7 +820,7 @@ const sendMessage = async (form, book) => {
                                         <td align="left" valign="middle"
                                           style="word-break: break-word;border-collapse: collapse !important;vertical-align: top">
                                           <a href="https://www.facebook.com/Eg.UTM" title="Facebook" target="_blank">
-                                            <img src="https://res.cloudinary.com/dmv4mxgn5/image/upload/v1713476650/icons/facebook_rwr4b3.png" alt="Facebook" title="Facebook" width="32"
+                                            <img src="images/image-1.png" alt="Facebook" title="Facebook" width="32"
                                               style="outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;clear: both;display: block !important;border: none;height: auto;float: none;max-width: 32px !important">
                                           </a>
                                         </td>
@@ -767,7 +836,7 @@ const sendMessage = async (form, book) => {
                                           style="word-break: break-word;border-collapse: collapse !important;vertical-align: top">
                                           <a href="https://www.linkedin.com/in/iss-egypt-utm-821447267/"
                                             title="LinkedIn" target="_blank">
-                                            <img src="https://res.cloudinary.com/dmv4mxgn5/image/upload/v1713476650/icons/linkedin_qrfqhy.png" alt="LinkedIn" title="LinkedIn" width="32"
+                                            <img src= alt="LinkedIn" title="LinkedIn" width="32"
                                               style="outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;clear: both;display: block !important;border: none;height: auto;float: none;max-width: 32px !important">
                                           </a>
                                         </td>
@@ -800,53 +869,50 @@ const sendMessage = async (form, book) => {
 </html>
 `;
 
-        var mailOptions = {
-            from: {
-                name: "ISS Egypt UTM",
-                address: process.env.USER_EMAIL
-            },
-            to: form.reserverEmail,
-            subject: 'ISS EGYPT - Reminder to Return the Book!',
-            html: html
-        }
-
-        transporter.sendMail(mailOptions, function (error, info) {
-            if (error) {
-                console.log(error);
-            } else {
-                console.log("Success")
-                return res.send({ Status: 'Success' })
-            }
-        });
-
-    } catch (error) {
-        res.status(400).json({ error: error.message })
+    var mailOptions = {
+      from: 'issegypt.academic@gmail.com',
+      to: 'mtra1234455@gmail.com',
+      subject: 'ISS EGYPT - Reminder to Return the Book!',
+      html: html
     }
+
+    transporter.sendMail(mailOptions, function (error, info) {
+      if (error) {
+        console.log(error);
+      } else {
+        console.log("Success")
+        return res.send({ Status: 'Success' })
+      }
+    });
+
+  } catch (error) {
+    res.status(400).json({ error: error.message })
+  }
 }
 
 
 
 
 const getForms = async (req, res) => {
-    const forms = await Booking.find({}).sort({ createdAt: -1 })
-    res.status(200).json(forms)
+  const forms = await Booking.find({}).sort({ createdAt: -1 })
+  res.status(200).json(forms)
 }
 
 
 
 const getForm = async (req, res) => {
-    const { id } = req.params
+  const { id } = req.params
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(404).json({ error: "No Such Booking" })
-    }
-    const form = await Booking.findById(id)
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(404).json({ error: "No Such Booking" })
+  }
+  const form = await Booking.findById(id)
 
-    if (!form) {
-        return res.status(404).json({ error: "No Such Booking" })
-    }
+  if (!form) {
+    return res.status(404).json({ error: "No Such Booking" })
+  }
 
-    res.status(200).json(form)
+  res.status(200).json(form)
 
 }
 
@@ -854,70 +920,70 @@ const getForm = async (req, res) => {
 
 
 const createForm = async (req, res) => {
-    const { bookId, reserverName, reserverEmail, reserverMatric, reserverPhone, reserverFaculty, reserverDate, reserverStatus } = req.body;
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    const length = 10; // Define the length of the random string
+  const { bookId, reserverName, reserverEmail, reserverMatric, reserverPhone, reserverFaculty, reserverDate, reserverStatus } = req.body;
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const length = 10; // Define the length of the random string
 
-    let result = "";
-    for (let i = 0; i < length; i++) {
-        result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
+  let result = "";
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
 
-    try {
-        // Create a new Book document with the extracted properties
-        const form = await Booking.create({ bookId, reserverName, reserverEmail, reserverMatric, reserverPhone, reserverFaculty, reserverPassword: result, reserverDate, reserverStatus });
+  try {
+    // Create a new Book document with the extracted properties
+    const form = await Booking.create({ bookId, reserverName, reserverEmail, reserverMatric, reserverPhone, reserverFaculty, reserverPassword: result, reserverDate, reserverStatus });
 
-        // Respond with the created form
-        res.status(200).json(form);
-    } catch (error) {
-        // Handle errors
-        console.error('Error creating form:', error);
-        res.status(400).json({ error: error.message });
-    }
+    // Respond with the created form
+    res.status(200).json(form);
+  } catch (error) {
+    // Handle errors
+    console.error('Error creating form:', error);
+    res.status(400).json({ error: error.message });
+  }
 }
 
 
 const deleteForm = async (req, res) => {
-    const { id } = req.params
+  const { id } = req.params
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(404).json({ error: "No Such Booking" })
-    }
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(404).json({ error: "No Such Booking" })
+  }
 
 
-    const form = await Booking.findOneAndDelete({ _id: id })
-    if (!form) {
-        return res.status(404).json({ error: "No Such Booking" })
-    }
-    res.status(200).json(form)
+  const form = await Booking.findOneAndDelete({ _id: id })
+  if (!form) {
+    return res.status(404).json({ error: "No Such Booking" })
+  }
+  res.status(200).json(form)
 }
 
 
 
 
 const updateForm = async (req, res) => {
-    const { id } = req.params
+  const { id } = req.params
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(404).json({ error: "No Such Booking" })
-    }
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(404).json({ error: "No Such Booking" })
+  }
 
-    const form = await Booking.findOneAndUpdate({ _id: id }, {
-        ...req.body
-    })
-    if (!form) {
-        return res.status(404).json({ error: "No Such Booking" })
-    }
-    res.status(200).json(form)
+  const form = await Booking.findOneAndUpdate({ _id: id }, {
+    ...req.body
+  })
+  if (!form) {
+    return res.status(404).json({ error: "No Such Booking" })
+  }
+  res.status(200).json(form)
 
 }
 
 
 module.exports = {
-    createForm,
-    getForms,
-    getForm,
-    deleteForm,
-    updateForm,
-    sendMessage
+  createForm,
+  getForms,
+  getForm,
+  deleteForm,
+  updateForm,
+  sendMessage
 }
