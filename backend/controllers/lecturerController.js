@@ -33,11 +33,11 @@ const getForm = async (req, res) => {
 
 
 const createForm = async (req, res) => {
-    const { lecturerName, lecturerPhone, lecturerEmail, lecturerFaculty, lecturerImage, lecturerJob } = req.body;
+    const { lecturerName, lecturerPhone, lecturerEmail, lecturerFaculty, lecturerImage, lecturerJob, lecturerOffice } = req.body;
 
     try {
         // Create a new Book document with the extracted properties
-        const form = await Lecturer.create({ lecturerName, lecturerPhone, lecturerEmail, lecturerFaculty, lecturerImage: "", lecturerJob: "" });
+        const form = await Lecturer.create({ lecturerName, lecturerPhone, lecturerEmail, lecturerFaculty, lecturerImage: "", lecturerJob: "", lecturerOffice });
 
         // Respond with the created form
         res.status(200).json(form);

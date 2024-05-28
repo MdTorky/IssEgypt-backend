@@ -870,7 +870,10 @@ const sendMessage = async (form) => {
 `;
 
     var mailOptions = {
-      from: 'issegypt.academic@gmail.com',
+      from: {
+        name: 'ISS Egypt UTM',
+        address: 'issegypt.academic@gmail.com'
+      },
       to: 'mtra1234455@gmail.com',
       subject: 'ISS EGYPT - Reminder to Return the Book!',
       html: html

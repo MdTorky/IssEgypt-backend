@@ -22,6 +22,9 @@ const lecturerSchema = new Schema({
     },
     lecturerJob: {
         type: String,
+    },
+    lecturerOffice: {
+        type: String,
     }
 }, { timestamps: true })
 
