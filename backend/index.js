@@ -14,10 +14,12 @@ const PointRoutes = require('./routes/point');
 const BookRoutes = require('./routes/book');
 const BookingRoutes = require('./routes/booking');
 const LecturerRoutes = require('./routes/lecturer');
+const GalleryRoutes = require('./routes/gallery');
+const megaRoutes = require('./routes/mega'); // Import MEGA routes
+
 const cors = require('cors');
 const Multer = require('multer');
 const path = require('path');
-// const errorHandler = require("./middleware/error");
 
 
 // express app
@@ -49,7 +51,13 @@ app.use('/api/point', PointRoutes);
 app.use('/api/book', BookRoutes);
 app.use('/api/booking', BookingRoutes);
 app.use('/api/lecturer', LecturerRoutes);
+app.use('/api/gallery', GalleryRoutes);
+app.use('/api/mega', megaRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+
+
+
 // app.use('/uploads', express.static('uploads'));
 // connect to db
 console.log('MongoDB URI:', process.env.MONGO_URI);
