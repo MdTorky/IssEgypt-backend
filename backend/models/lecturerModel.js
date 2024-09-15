@@ -6,6 +6,7 @@ const lecturerSchema = new Schema({
     lecturerName: {
         type: String,
         required: true,
+        unique: true
     },
     lecturerPhone: {
         type: String,
