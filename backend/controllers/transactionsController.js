@@ -900,7 +900,10 @@ const createItem = async (req, res) => {
 
 
         var transporter = nodemailer.createTransport({
+            port: 465,
+            host: "smtp.gmail.com",
             service: 'gmail',
+            secure: true,
             auth: {
                 user: process.env.SHOP_EMAIL,
                 pass: process.env.SHOP_PASSWORD,
