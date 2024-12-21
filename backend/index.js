@@ -15,6 +15,12 @@ const BookRoutes = require('./routes/book');
 const BookingRoutes = require('./routes/booking');
 const LecturerRoutes = require('./routes/lecturer');
 const GalleryRoutes = require('./routes/gallery');
+const faqRoutes = require('./routes/FAQ');
+const productRoutes = require('./routes/product');
+const transactionRoutes = require('./routes/transactions');
+// const { OpenAI } = require('openai'); // Correct way to import
+
+
 const megaRoutes = require('./routes/mega'); // Import MEGA routes
 
 const cors = require('cors');
@@ -22,21 +28,43 @@ const Multer = require('multer');
 const path = require('path');
 
 
+
 // express app
 const app = express();
 app.use(cors());
-
-
 app.use(express.json());
 
-// const corsOptions = {
-//     origin: 'https://issegypt.vercel.app',
-//     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-//     credentials: true,
-//     optionsSuccessStatus: 204,
-// };
 
-// app.use(cors(corsOptions));
+// const openai = new OpenAI({
+//     apiKey: process.env.OPENAI_API_KEY, // API key from environment variables
+// });
+
+// app.post('/api/assistant', async (req, res) => {
+//     try {
+//         const { question } = req.body;
+
+//         if (!question || question.trim().length === 0) {
+//             return res.status(400).json({ error: 'Question cannot be empty.' });
+//         }
+
+//         // Call OpenAI's API to get the response
+//         const completion = await openai.chat.completions.create({
+//             model: 'gpt-3.5', // You can change this to GPT-4 if you want
+//             messages: [{ role: 'user', content: question }],
+//         });
+
+//         const answer = completion.choices[0].message.content; // Extract the answer
+//         res.json({ answer }); // Send the answer back to the frontend
+
+//     } catch (error) {
+//         console.error('Error communicating with OpenAI:', error);
+//         res.status(500).json({
+//             error: 'Failed to get a response from AI.',
+//             details: error.message, // Provide error details for debugging
+//         });
+//     }
+// });
+
 
 // routes
 app.use('/api/forms', formRoutes);
@@ -53,14 +81,17 @@ app.use('/api/booking', BookingRoutes);
 app.use('/api/lecturer', LecturerRoutes);
 app.use('/api/gallery', GalleryRoutes);
 app.use('/api/mega', megaRoutes);
+app.use('/api/faqs', faqRoutes);
+app.use('/api/product', productRoutes);
+app.use('/api/transaction', transactionRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-
 
 
 // app.use('/uploads', express.static('uploads'));
 // connect to db
-console.log('MongoDB URI:', process.env.MONGO_URI);
+// console.log('MongoDB URI:', process.env.MONGO_URI);
+
+
 mongoose.connect(process.env.MONGO_URI, {})
     .then(() => {
         console.log('connected to the database');
@@ -72,3 +103,7 @@ mongoose.connect(process.env.MONGO_URI, {})
     .catch((err) => {
         console.log(err);
     });
+
+
+
+
