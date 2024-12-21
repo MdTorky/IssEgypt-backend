@@ -919,7 +919,7 @@ const createItem = async (req, res) => {
         };
 
         // Send the email
-        transporter.sendMail(mailOptions, function (error, info) {
+        await transporter.sendMail(mailOptions, function (error, info) {
             if (error) {
                 console.log(error);
                 return res.status(500).json({ error: 'Failed to send email' });
