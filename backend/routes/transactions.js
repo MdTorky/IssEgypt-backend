@@ -5,6 +5,7 @@ const {
     createItem,
     deleteItem,
     updateItem,
+    getItemByReference
 } = require("../controllers/transactionsController")
 
 const router = express.Router()
@@ -19,6 +20,8 @@ router.get('/', getAll)
 
 // Get Single
 router.get('/:id', getItem)
+
+router.get('/t/:referenceNumber', getItemByReference)
 
 
 //Insert Product

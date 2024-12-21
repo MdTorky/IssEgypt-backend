@@ -9,69 +9,85 @@ const dotenv = require("dotenv");
 //get all items
 
 const getAll = async (req, res) => {
-    const items = await Transaction.find({}).sort({ createdAt: -1 })
-    res.status(200).json(items)
+  const items = await Transaction.find({}).sort({ createdAt: -1 })
+  res.status(200).json(items)
 }
 
 
 // get single item
 const getItem = async (req, res) => {
-    const { id } = req.params
+  const { id } = req.params
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(404).json({ error: "No Such Item Found" })
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(404).json({ error: "No Such Item Found" })
 
-    }
-    const item = await Transaction.findById(id)
+  }
+  const item = await Transaction.findById(id)
 
-    if (!item) {
-        return res.status(404).json({ error: "No Such Item Found" })
-    }
+  if (!item) {
+    return res.status(404).json({ error: "No Such Item Found" })
+  }
 
-    res.status(200).json(item)
+  res.status(200).json(item)
 }
 
+
+const getItemByReference = async (req, res) => {
+  const { referenceNumber } = req.params
+
+  try {
+    const item = await Transaction.findOne({ referenceNumber }).sort({ createdAt: 1 });
+
+    if (!item) {
+      return res.status(404).json({ error: "No product found with the specified userID" });
+    }
+
+    res.status(200).json(item);
+  } catch (error) {
+    res.status(500).json({ error: "Internal server error" });
+  }
+}
 
 
 
 //create a new item
 const createItem = async (req, res) => {
-    const { productId, buyerName, buyerMatric, buyerEmail, buyerPhone, buyerFaculty, buyerSemester, productQuantity, productSize, proof } = req.body
+  const { productId, buyerName, buyerMatric, buyerEmail, buyerPhone, buyerFaculty, buyerAddress, productQuantity, productSize, proof } = req.body
 
-    const generateReferenceNumber = () => {
-        const buyerNamePart = buyerName.slice(0, 2).toUpperCase();
-        const buyerMatricPart = buyerMatric.slice(0, 2).toUpperCase();
-        const randomPart = Math.random().toString(36).substr(2, 4).toUpperCase();
-        return buyerNamePart + buyerMatricPart + randomPart;
-    };
-    const referenceNumber = generateReferenceNumber();
+  const generateReferenceNumber = () => {
+    const buyerNamePart = buyerName.slice(0, 2).toUpperCase();
+    const buyerMatricPart = buyerMatric.slice(0, 2).toUpperCase();
+    const randomPart = Math.random().toString(36).substr(2, 4).toUpperCase();
+    return buyerNamePart + buyerMatricPart + randomPart;
+  };
+  const referenceNumber = generateReferenceNumber();
 
-    try {
-        const item = await Transaction.create({ productId, buyerName, buyerMatric, buyerEmail, buyerPhone, buyerFaculty, buyerSemester, productQuantity, productSize, referenceNumber, transactionStatus: "Not Delivered", proof })
+  try {
+    const item = await Transaction.create({ productId, buyerName, buyerMatric, buyerEmail, buyerPhone, buyerFaculty, buyerAddress, productQuantity, productSize, referenceNumber, transactionStatus: "Didn't Arrive", proof })
 
-        const product = await Product.findById(productId);
+    const product = await Product.findById(productId);
 
-        if (!product) {
-            return res.status(404).json({ error: "Product not found" });
-        }
-
-
-        const purchaseDate = new Date();
-        const formattedDate = purchaseDate.toLocaleString('en-GB', {
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: false,
-        }).replace(',', '');
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
 
 
+    const purchaseDate = new Date();
+    const formattedDate = purchaseDate.toLocaleString('en-GB', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    }).replace(',', '');
 
 
 
-        const html = `
+
+
+    const html = `
         <!DOCTYPE HTML
     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional //EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
   <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml"
@@ -899,106 +915,107 @@ const createItem = async (req, res) => {
 
 
 
-        var transporter = nodemailer.createTransport({
-            port: 465,
-            host: "smtp.gmail.com",
-            service: 'gmail',
-            secure: true,
-            auth: {
-                user: process.env.SHOP_EMAIL,
-                pass: process.env.SHOP_PASSWORD,
-            }
-        });
+    var transporter = nodemailer.createTransport({
+      port: 465,
+      host: "smtp.gmail.com",
+      service: 'gmail',
+      secure: true,
+      auth: {
+        user: process.env.SHOP_EMAIL,
+        pass: process.env.SHOP_PASSWORD,
+      }
+    });
 
-        await new Promise((resolve, reject) => {
-            // verify connection configuration
-            transporter.verify(function (error, success) {
-                if (error) {
-                    console.log(error);
-                    reject(error);
-                } else {
-                    console.log("Server is ready to take our messages");
-                    resolve(success);
-                }
-            });
-        });
+    await new Promise((resolve, reject) => {
+      // verify connection configuration
+      transporter.verify(function (error, success) {
+        if (error) {
+          console.log(error);
+          reject(error);
+        } else {
+          console.log("Server is ready to take our messages");
+          resolve(success);
+        }
+      });
+    });
 
-        // Configure email options
-        var mailOptions = {
-            from: {
-                name: 'ISS Egypt UTM',
-                address: process.env.SHOP_EMAIL // Replace with your email
-            },
-            to: buyerEmail,
-            subject: 'ISS EGYPT - Thanks For Your Purchase!',
-            html: html
-        };
+    // Configure email options
+    var mailOptions = {
+      from: {
+        name: 'ISS Egypt UTM',
+        address: process.env.SHOP_EMAIL // Replace with your email
+      },
+      to: buyerEmail,
+      subject: 'ISS EGYPT - Thanks For Your Purchase!',
+      html: html
+    };
 
-        // Send the email
-        await new Promise((resolve, reject) => {
-            // send mail
-            transporter.sendMail(mailOptions, (err, info) => {
-                if (err) {
-                    console.error(err);
-                    reject(err);
-                } else {
-                    console.log(info);
-                    resolve(info);
-                }
-            });
-        });
-        res.status(200).json(item)
+    // Send the email
+    await new Promise((resolve, reject) => {
+      // send mail
+      transporter.sendMail(mailOptions, (err, info) => {
+        if (err) {
+          console.error(err);
+          reject(err);
+        } else {
+          console.log(info);
+          resolve(info);
+        }
+      });
+    });
+    res.status(200).json(item)
 
-    } catch (error) {
-        res.status(400).json({ error: error.message })
-    }
+  } catch (error) {
+    res.status(400).json({ error: error.message })
+  }
 }
 
 //delete an item
 const deleteItem = async (req, res) => {
-    const { id } = req.params
+  const { id } = req.params
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(404).json({ error: "No Such Item Found" })
-    }
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(404).json({ error: "No Such Item Found" })
+  }
 
-    const item = await Transaction.findOneAndDelete({ _id: id })
+  const item = await Transaction.findOneAndDelete({ _id: id })
 
-    if (!item) {
-        return res.status(404).json({ error: "No Such Item Found" })
-    }
+  if (!item) {
+    return res.status(404).json({ error: "No Such Item Found" })
+  }
 
-    res.status(200).json(item)
+  res.status(200).json(item)
 
 }
 
 
 //update an item
 const updateItem = async (req, res) => {
-    const { id } = req.params
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(404).json({ error: "No Such Item Found" })
-    }
-    const item = await Transaction.findOneAndUpdate({ _id: id }, {
-        ...req.body
-    })
+  const { id } = req.params
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(404).json({ error: "No Such Item Found" })
+  }
+  const item = await Transaction.findOneAndUpdate({ _id: id }, {
+    ...req.body
+  })
 
-    if (!item) {
-        return res.status(404).json({ error: "No Such Item Found" })
-    }
+  if (!item) {
+    return res.status(404).json({ error: "No Such Item Found" })
+  }
 
-    res.status(200).json(item)
+  res.status(200).json(item)
 
 }
 
 
 
 module.exports = {
-    getAll,
-    getItem,
-    createItem,
-    deleteItem,
-    updateItem,
+  getAll,
+  getItem,
+  createItem,
+  deleteItem,
+  updateItem,
+  getItemByReference
 }
 
 

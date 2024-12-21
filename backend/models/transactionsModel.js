@@ -29,7 +29,7 @@ const transactionsSchema = new Schema({
         type: String,
         required: true
     },
-    buyerSemester: {
+    buyerAddress: {
         type: String,
         required: true
     },
@@ -42,6 +42,7 @@ const transactionsSchema = new Schema({
     },
     referenceNumber: {
         type: String,
+        unique: true
     },
     transactionStatus: {
         type: String,
