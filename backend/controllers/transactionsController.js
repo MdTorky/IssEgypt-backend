@@ -910,6 +910,19 @@ const createItem = async (req, res) => {
             }
         });
 
+        await new Promise((resolve, reject) => {
+            // verify connection configuration
+            transporter.verify(function (error, success) {
+                if (error) {
+                    console.log(error);
+                    reject(error);
+                } else {
+                    console.log("Server is ready to take our messages");
+                    resolve(success);
+                }
+            });
+        });
+
         // Configure email options
         var mailOptions = {
             from: {
@@ -922,14 +935,17 @@ const createItem = async (req, res) => {
         };
 
         // Send the email
-        await transporter.sendMail(mailOptions, function (error, info) {
-            if (error) {
-                console.log(error);
-                return res.status(500).json({ error: 'Failed to send email' });
-            } else {
-                console.log("Email sent successfully: " + info.response);
-                return res.status(200).json({ Status: 'Success' });
-            }
+        await new Promise((resolve, reject) => {
+            // send mail
+            transporter.sendMail(mailData, (err, info) => {
+                if (err) {
+                    console.error(err);
+                    reject(err);
+                } else {
+                    console.log(info);
+                    resolve(info);
+                }
+            });
         });
         res.status(200).json(item)
 
