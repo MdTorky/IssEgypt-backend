@@ -937,7 +937,7 @@ const createItem = async (req, res) => {
         // Send the email
         await new Promise((resolve, reject) => {
             // send mail
-            transporter.sendMail(mailData, (err, info) => {
+            transporter.sendMail(mailOptions, (err, info) => {
                 if (err) {
                     console.error(err);
                     reject(err);
