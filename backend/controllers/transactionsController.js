@@ -49,6 +49,27 @@ const getItemByReference = async (req, res) => {
 }
 
 
+const updateAllTransactionStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+
+    const result = await Transaction.updateMany(
+      {}, // Empty filter means update all documents
+      { $set: { transactionStatus: status } }
+    );
+
+    if (result.modifiedCount > 0) {
+      res.status(200).json({ message: 'All transactions updated successfully' });
+    } else {
+      res.status(404).json({ error: 'No transactions found to update' });
+    }
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+}
+
+
+
 
 //create a new item
 const createItem = async (req, res) => {
@@ -1015,7 +1036,8 @@ module.exports = {
   createItem,
   deleteItem,
   updateItem,
-  getItemByReference
+  getItemByReference,
+  updateAllTransactionStatus
 }
 
 

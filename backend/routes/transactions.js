@@ -5,7 +5,8 @@ const {
     createItem,
     deleteItem,
     updateItem,
-    getItemByReference
+    getItemByReference,
+    updateAllTransactionStatus
 } = require("../controllers/transactionsController")
 
 const router = express.Router()
@@ -33,5 +34,6 @@ router.delete('/:id', deleteItem)
 
 //Update Product
 router.patch('/:id', updateItem)
+router.patch('/t/updateAll', updateAllTransactionStatus)
 
 module.exports = router
