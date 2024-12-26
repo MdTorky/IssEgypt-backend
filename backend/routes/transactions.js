@@ -6,7 +6,9 @@ const {
     deleteItem,
     updateItem,
     getItemByReference,
-    updateAllTransactionStatus
+    updateAllTransactionStatus,
+    sendEmail,
+    sendAllEmail
 } = require("../controllers/transactionsController")
 
 const router = express.Router()
@@ -23,7 +25,8 @@ router.get('/', getAll)
 router.get('/:id', getItem)
 
 router.get('/t/:referenceNumber', getItemByReference)
-
+router.post('/sendEmail/:referenceNumber', sendEmail);
+router.post('/sendAllEmail', sendAllEmail);
 
 //Insert Product
 router.post('/', createItem)
