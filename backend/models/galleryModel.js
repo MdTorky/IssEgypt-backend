@@ -23,6 +23,10 @@ const gallerySchema = new Schema({
         type: String,
         required: true
     },
+    session: {
+        type: String,
+        required: true
+    },
     time: {
         type: Number,
     }

@@ -4,7 +4,8 @@ const {
     getForms,
     getForm,
     deleteForm,
-    updateForm
+    updateForm,
+    updateAllSessions
 } = require('../controllers/galleryController')
 const router = express.Router()
 
@@ -25,5 +26,6 @@ router.delete('/:id', deleteForm)
 
 // UPDATE a workout
 router.patch('/:id', updateForm)
+router.patch('/session/update', updateAllSessions)
 
 module.exports = router
