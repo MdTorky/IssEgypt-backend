@@ -13,7 +13,7 @@ const formSchema = new Schema({
     },
     eventImg: {
         type: String,
-        required: true
+        // required: true
     },
     eventDescription: {
         type: String,
@@ -28,6 +28,11 @@ const formSchema = new Schema({
     },
     customInputs: [{
         type: String,
+    }],
+    selectInputs: [{
+        label: String,
+        options: [String],
+        isMultiSelect: Boolean
     }],
     groupLink: {
         type: String,

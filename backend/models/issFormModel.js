@@ -42,6 +42,10 @@ const issFormSchema = new Schema({
     customInputs: [{
         type: String,
     }],
+    selectInputs: {
+        type: Map, // Or an object to store { label: selectedValue(s) }
+        of: [String], // Array to handle multi-select
+    },
 }, { timestamps: true })
 
 module.exports = mongoose.model('ISSForm', issFormSchema)

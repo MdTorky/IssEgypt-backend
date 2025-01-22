@@ -32,10 +32,10 @@ const getForm = async (req, res) => {
 
 
 const createForm = async (req, res) => {
-    const { type, eventName, eventID, fullName, matric, email, phone, faculty, year, semester, picture, proof, customInputs } = req.body
+    const { type, eventName, eventID, fullName, matric, email, phone, faculty, year, semester, picture, proof, customInputs, selectInputs } = req.body
 
     try {
-        const form = await ISSForms.create({ type, eventName, eventID, fullName, matric, email, phone, faculty, year, semester, picture, proof, customInputs })
+        const form = await ISSForms.create({ type, eventName, eventID, fullName, matric, email, phone, faculty, year, semester, picture, proof, customInputs, selectInputs })
         res.status(200).json(form)
     } catch (error) {
         res.status(400).json({ error: error.message })
