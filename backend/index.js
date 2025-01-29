@@ -15,9 +15,9 @@ const BookRoutes = require('./routes/book');
 const BookingRoutes = require('./routes/booking');
 const LecturerRoutes = require('./routes/lecturer');
 const GalleryRoutes = require('./routes/gallery');
-const faqRoutes = require('./routes/FAQ');
 const productRoutes = require('./routes/product');
 const transactionRoutes = require('./routes/transactions');
+const quizRoutes = require('./routes/quiz');
 // const { OpenAI } = require('openai'); // Correct way to import
 
 
@@ -81,9 +81,9 @@ app.use('/api/booking', BookingRoutes);
 app.use('/api/lecturer', LecturerRoutes);
 app.use('/api/gallery', GalleryRoutes);
 app.use('/api/mega', megaRoutes);
-app.use('/api/faqs', faqRoutes);
 app.use('/api/product', productRoutes);
 app.use('/api/transaction', transactionRoutes);
+app.use('/api/quiz', quizRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 
