@@ -360,10 +360,6 @@ const postAnswers = async (req, res) => {
 
 
 
-const compareAnswers = (adminAnswer, userAnswer) => {
-    // Basic comparison logic (you can integrate NLP libraries like natural or compromise for semantic comparison)
-    return adminAnswer.trim().toLowerCase() === userAnswer.trim().toLowerCase();
-};
 
 module.exports = {
     addQuestion,
@@ -379,17 +375,5 @@ module.exports = {
 }
 
 
-// let totalPoints = 0;
-//         const userAnswers = await Promise.all(
-//             answers.map(async (userAnswer) => {
-//                 const question = await Questions.findById(userAnswer.questionId);
-//                 if (!question) throw new Error('Question not found');
-
-//                 const points = compareAnswers(question.answer, userAnswer.answer) ? question.points : 0;
-//                 totalPoints += points;
-
-//                 return { questionId: question._id, answer: userAnswer.answer, points };
-//             })
-//         );
 
 
