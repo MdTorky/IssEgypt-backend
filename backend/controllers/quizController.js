@@ -35,7 +35,7 @@ const getUserAnswersByDate = async (req, res) => {
             'answers.questionId': { $in: questions.map((q) => q._id) },
         }).populate({
             path: 'answers.questionId',
-            select: 'questionText',
+            select: 'questionText answer points',
         });
 
         const userData = userAnswers.map((userAnswer) => ({
@@ -46,6 +46,8 @@ const getUserAnswersByDate = async (req, res) => {
             answers: userAnswer.answers.map((ans) => ({
                 questionId: ans.questionId._id,
                 question: ans.questionId.questionText,
+                qAnswer: ans.questionId.answer,
+                qPoints: ans.questionId.points,
                 answer: ans.answer,
                 points: ans.points,
             })),
