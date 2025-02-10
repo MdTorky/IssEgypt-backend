@@ -209,23 +209,49 @@ const questionsByDate = async (req, res) => {
 
 
 
+// const getQuestions = async (req, res) => {
+//     try {
+//         const today = new Date();
+//         const questions = await Questions.find({
+//             publicDate: {
+//                 $gte: new Date(today.setHours(0, 0, 0, 0)), // Start of today
+//                 $lt: new Date(today.setHours(23, 59, 59, 999)) // End of today
+//             }
+//         });
+//         if (questions.length === 0) {
+//             return res.status(404).json({ message: 'No questions found for today.' });
+//         }
+//         res.status(200).json(questions);
+//     } catch (error) {
+//         res.status(500).json({ error: error.message });
+//     }
+// };
+
 const getQuestions = async (req, res) => {
     try {
-        const today = new Date();
+        // Set the current time to Malaysia time (UTC+8)
+        const malaysiaTime = new Date().toLocaleString("en-US", { timeZone: "Asia/Kuala_Lumpur" });
+        const today = new Date(malaysiaTime);
+
+        // Define the start and end of the day in Malaysian time
+        const startOfDay = new Date(today.setHours(0, 0, 0, 0)); // 00:00 MYT
+        const endOfDay = new Date(today.setHours(23, 59, 59, 999)); // 23:59 MYT
+
+        // Query for questions with publicDate within Malaysia's day
         const questions = await Questions.find({
-            publicDate: {
-                $gte: new Date(today.setHours(0, 0, 0, 0)), // Start of today
-                $lt: new Date(today.setHours(23, 59, 59, 999)) // End of today
-            }
+            publicDate: { $gte: startOfDay, $lt: endOfDay }
         });
+
         if (questions.length === 0) {
-            return res.status(404).json({ message: 'No questions found for today.' });
+            return res.status(404).json({ message: 'No questions found for today in Malaysia time.' });
         }
+
         res.status(200).json(questions);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
+
 
 
 const getAllQuestions = async (req, res) => {
