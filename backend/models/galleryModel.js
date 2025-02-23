@@ -19,6 +19,9 @@ const gallerySchema = new Schema({
         type: String,
         required: true
     },
+    driveLink: {
+        type: String,
+    },
     folderImage: {
         type: String,
         required: true
