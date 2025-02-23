@@ -18,6 +18,8 @@ const GalleryRoutes = require('./routes/gallery');
 const productRoutes = require('./routes/product');
 const transactionRoutes = require('./routes/transactions');
 const quizRoutes = require('./routes/quiz');
+const serviceRoutes = require('./routes/services');
+const HelpingRoutes = require('./routes/helping');
 // const { OpenAI } = require('openai'); // Correct way to import
 
 
@@ -84,6 +86,8 @@ app.use('/api/mega', megaRoutes);
 app.use('/api/product', productRoutes);
 app.use('/api/transaction', transactionRoutes);
 app.use('/api/quiz', quizRoutes);
+app.use('/api/service', serviceRoutes);
+app.use('/api/helping', HelpingRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 
