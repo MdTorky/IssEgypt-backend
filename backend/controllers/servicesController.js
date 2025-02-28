@@ -53,11 +53,11 @@ const getItemByLink = async (req, res) => {
 
 
 const createItem = async (req, res) => {
-    const { name, aName, description, aDescription, icon, link, card, status, groups } = req.body;
+    const { name, aName, description, aDescription, icon, link, card, status, groups, bgImage } = req.body;
 
     try {
         // Validate required fields
-        if (!name || !aName || !description || !aDescription || !icon || !link || !card) {
+        if (!name || !aName || !description || !aDescription || !icon || !link || !card || !bgImage) {
             return res.status(400).json({ message: "All required fields must be provided" });
         }
 
@@ -69,7 +69,7 @@ const createItem = async (req, res) => {
             return res.status(400).json({ message: "Each group must have a name and an Arabic name" });
         }
 
-        const item = await Service.create({ name, aName, description, aDescription, icon, link, card, status, groups });
+        const item = await Service.create({ name, aName, description, aDescription, icon, link, card, status, groups, bgImage });
 
         res.status(200).json(item);
     } catch (error) {
