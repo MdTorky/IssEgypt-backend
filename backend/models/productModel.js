@@ -30,6 +30,10 @@ const productsSchema = new Schema({
         type: String,
         required: true,
     },
+    pFrontImage: {
+        type: String,
+        required: true,
+    },
     pStatus: {
         type: String,
         required: true,
