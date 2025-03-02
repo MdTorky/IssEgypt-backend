@@ -42,6 +42,7 @@ const getUserAnswersByDate = async (req, res) => {
             _id: userAnswer._id,
             matric: userAnswer.matricNumber,
             name: userAnswer.fullName,
+            submittedOn: userAnswer.submittedOn,
             points: userAnswer.answers.reduce((total, ans) => total + (ans.points || 0), 0),
             answers: userAnswer.answers.map((ans) => ({
                 questionId: ans.questionId._id,
@@ -162,6 +163,7 @@ const getContestantDataByDate = async (req, res) => {
                     _id: '$matricNumber',
                     totalPoints: { $sum: '$answers.points' },
                     fullName: { $first: '$fullName' },
+                    submittedOn: { $first: '$submittedOn' },
                     email: { $first: "$email" },
                     answers: { $push: '$answers' } // Push all answers into an array
                 },
