@@ -11,6 +11,10 @@ const formSchema = new Schema({
         type: String,
         required: true
     },
+    link: {
+        type: String,
+        unique: true
+    },
     eventImg: {
         type: String,
         // required: true

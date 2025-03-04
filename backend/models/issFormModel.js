@@ -6,10 +6,6 @@ const issFormSchema = new Schema({
     type: {
         type: String,
     },
-    link: {
-        type: String,
-        unique: true
-    },
     eventName: {
         type: String,
     },

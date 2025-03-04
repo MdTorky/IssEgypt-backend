@@ -5,7 +5,8 @@ const {
     getForms,
     getForm,
     deleteForm,
-    updateForm
+    updateForm,
+    getFormByLink
 } = require('../controllers/formController')
 const requireAuth = require('../middleware/requireAuth')
 const router = express.Router()
@@ -18,10 +19,12 @@ router.get('/', getForms)
 
 // GET a single workout
 router.get('/:id', getForm)
+router.get('/link/:link', getFormByLink)
 
 // POST a new workout
 // router.post('/', parser.single("image"), createForm)
 router.post('/', createForm)
+
 
 // DELETE a workout
 router.delete('/:id', deleteForm)
