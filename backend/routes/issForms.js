@@ -5,7 +5,8 @@ const {
     getForms,
     getForm,
     deleteForm,
-    updateForm
+    updateForm,
+    getFormsByEventId
 } = require('../controllers/issFormController')
 const router = express.Router()
 
@@ -15,6 +16,7 @@ router.get('/', getForms)
 
 // GET a single workout
 router.get('/:id', getForm)
+router.get('/events/:eventID', getFormsByEventId)
 
 // POST a new workout
 // router.post('/', parser.single("image"), createForm)

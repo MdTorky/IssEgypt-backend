@@ -30,6 +30,24 @@ const getForm = async (req, res) => {
 }
 
 
+const getFormsByEventId = async (req, res) => {
+    const { eventID } = req.params; // Extract eventID from params
+
+    try {
+        // Find all forms with the matching eventID
+        const forms = await ISSForms.find({ eventID: eventID });
+
+        if (forms.length === 0) {
+            return res.status(404).json({ error: "No Forms Found for This Event ID" });
+        }
+
+        res.status(200).json(forms);
+    } catch (error) {
+        res.status(500).json({ error: "Server Error", details: error.message });
+    }
+};
+
+
 
 const createForm = async (req, res) => {
     const { type, eventName, eventID, fullName, matric, email, phone, faculty, year, semester, picture, proof, customInputs, selectInputs } = req.body
@@ -104,5 +122,6 @@ module.exports = {
     getForms,
     getForm,
     deleteForm,
-    updateForm
+    updateForm,
+    getFormsByEventId
 }
