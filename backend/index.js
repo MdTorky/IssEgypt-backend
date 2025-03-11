@@ -20,6 +20,7 @@ const transactionRoutes = require('./routes/transactions');
 const quizRoutes = require('./routes/quiz');
 const serviceRoutes = require('./routes/services');
 const HelpingRoutes = require('./routes/helping');
+const welcomeRoutes = require("./routes/welcome");
 // const { OpenAI } = require('openai'); // Correct way to import
 
 
@@ -31,42 +32,11 @@ const path = require('path');
 
 
 
+
 // express app
 const app = express();
 app.use(cors());
 app.use(express.json());
-
-
-// const openai = new OpenAI({
-//     apiKey: process.env.OPENAI_API_KEY, // API key from environment variables
-// });
-
-// app.post('/api/assistant', async (req, res) => {
-//     try {
-//         const { question } = req.body;
-
-//         if (!question || question.trim().length === 0) {
-//             return res.status(400).json({ error: 'Question cannot be empty.' });
-//         }
-
-//         // Call OpenAI's API to get the response
-//         const completion = await openai.chat.completions.create({
-//             model: 'gpt-3.5', // You can change this to GPT-4 if you want
-//             messages: [{ role: 'user', content: question }],
-//         });
-
-//         const answer = completion.choices[0].message.content; // Extract the answer
-//         res.json({ answer }); // Send the answer back to the frontend
-
-//     } catch (error) {
-//         console.error('Error communicating with OpenAI:', error);
-//         res.status(500).json({
-//             error: 'Failed to get a response from AI.',
-//             details: error.message, // Provide error details for debugging
-//         });
-//     }
-// });
-
 
 // routes
 app.use('/api/forms', formRoutes);
@@ -88,12 +58,17 @@ app.use('/api/transaction', transactionRoutes);
 app.use('/api/quiz', quizRoutes);
 app.use('/api/service', serviceRoutes);
 app.use('/api/helping', HelpingRoutes);
+app.use("/api/welcome", welcomeRoutes);
+
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 
-// app.use('/uploads', express.static('uploads'));
-// connect to db
-// console.log('MongoDB URI:', process.env.MONGO_URI);
+
+
+
+
+
+
 
 
 mongoose.connect(process.env.MONGO_URI, {})
