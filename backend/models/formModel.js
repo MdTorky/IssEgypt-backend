@@ -53,6 +53,10 @@ const formSchema = new Schema({
     limit: {
         type: Number,
     },
+    sendEmail: {
+        type: Boolean,
+        default: false
+    }
 }, { timestamps: true })
 
 module.exports = mongoose.model('Form', formSchema)
