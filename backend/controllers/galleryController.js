@@ -50,10 +50,10 @@ const updateAllSessions = async (req, res) => {
 
 
 const createForm = async (req, res) => {
-    const { folderName, arabicFolderName, folderLink, folderImage, driveLink, icon, time, session } = req.body
+    const { folderName, arabicFolderName, folderLink, folderImage, driveLink, icon, time, session, committee } = req.body
 
     try {
-        const form = await Gallery.create({ folderName, arabicFolderName, folderLink, driveLink, folderImage, icon, time, session })
+        const form = await Gallery.create({ folderName, arabicFolderName, folderLink, driveLink, folderImage, icon, time, session, committee })
         res.status(200).json(form)
     } catch (error) {
         res.status(400).json({ error: error.message })

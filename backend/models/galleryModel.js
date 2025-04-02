@@ -32,6 +32,9 @@ const gallerySchema = new Schema({
     },
     time: {
         type: Number,
+    },
+    committee: {
+        type: String,
     }
 
 }, { timestamps: true })
