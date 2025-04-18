@@ -5,6 +5,7 @@ const {
     createItem,
     deleteItem,
     updateItem,
+    updateProductInventory
 } = require("../controllers/productController")
 
 const router = express.Router()
@@ -31,5 +32,6 @@ router.delete('/:id', deleteItem)
 
 //Update Product
 router.patch('/:id', updateItem)
+router.post('/inventory', updateProductInventory)
 
 module.exports = router

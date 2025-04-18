@@ -95,6 +95,50 @@ const updateItem = async (req, res) => {
 
 }
 
+const updateProductInventory = async (req, res) => {
+    const { productId, size, quantity } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(productId)) {
+        return res.status(404).json({ error: "Invalid product ID" });
+    }
+
+    try {
+        const product = await Product.findById(productId);
+
+        if (!product) {
+            return res.status(404).json({ error: "Product not found" });
+        }
+
+        const sizeInventory = product.pSizeInventory || new Map();
+
+        // Use .get() for Maps
+        const currentStock = sizeInventory.get(size) || 0;
+
+        console.log(size, quantity, currentStock, sizeInventory);
+
+        if (currentStock < quantity) {
+            return res.status(400).json({
+                error: "Not enough inventory",
+                available: currentStock
+            });
+        }
+
+        // Use .set() to update Maps
+        sizeInventory.set(size, currentStock - quantity);
+
+        product.pSizeInventory = sizeInventory;
+        await product.save();
+
+        return res.status(200).json({
+            message: "Inventory updated successfully",
+            remainingStock: sizeInventory.get(size)
+        });
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+};
+
+
 
 
 module.exports = {
@@ -103,6 +147,7 @@ module.exports = {
     createItem,
     deleteItem,
     updateItem,
+    updateProductInventory
     // getFirstProductByUserId
 }
 
