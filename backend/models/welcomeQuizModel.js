@@ -1,5 +1,17 @@
 const mongoose = require("mongoose")
 
+const optionSchema = new mongoose.Schema({
+    text: {
+        type: String,
+        required: true,
+    },
+    color: {
+        type: String,
+        enum: ["red", "blue", "yellow", "green"],
+        required: true,
+    }
+})
+
 const questionSchema = new mongoose.Schema({
     text: {
         type: String,
@@ -13,6 +25,12 @@ const questionSchema = new mongoose.Schema({
         type: Number,
         default: 60, // 1 minute in seconds
     },
+    questionType: {
+        type: String,
+        enum: ["open", "multiple_choice"],
+        default: "open"
+    },
+    options: [optionSchema]
 })
 
 const welcomeQuizSchema = new mongoose.Schema({
@@ -46,18 +64,4 @@ const welcomeQuizSchema = new mongoose.Schema({
     },
 })
 
-// Remove or comment out the pre-save hook since we're now generating the code in the controller
-// welcomeQuizSchema.pre('save', async function(next) {
-//   if (!this.code) {
-//     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-//     let code = '';
-//     for (let i = 0; i < 6; i++) {
-//       code += characters.charAt(Math.floor(Math.random() * characters.length));
-//     }
-//     this.code = code;
-//   }
-//   next();
-// });
-
 module.exports = mongoose.model("WelcomeQuiz", welcomeQuizSchema)
-

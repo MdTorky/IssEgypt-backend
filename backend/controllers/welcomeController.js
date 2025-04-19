@@ -379,6 +379,79 @@ const startQuiz = async (req, res) => {
 }
 
 // Submit an answer
+// const submitAnswer = async (req, res) => {
+//     try {
+//         const { groupId, answer } = req.body
+//         const group = await WelcomeGroup.findById(groupId)
+
+//         if (!group) {
+//             return res.status(404).json({ error: "Group not found" })
+//         }
+
+//         const quiz = await WelcomeQuiz.findById(group.quiz)
+
+//         if (!quiz || !quiz.isActive) {
+//             return res.status(400).json({ error: "Quiz is not active" })
+//         }
+
+//         const currentQuestionIndex = quiz.currentQuestion
+
+//         if (currentQuestionIndex < 0 || currentQuestionIndex >= quiz.questions.length) {
+//             return res.status(400).json({ error: "Invalid question index" })
+//         }
+
+//         // Check if answer already submitted for this question
+//         const existingAnswer = group.answers.find((a) => a.questionIndex === currentQuestionIndex)
+//         if (existingAnswer) {
+//             return res.status(400).json({ error: "Answer already submitted for this question" })
+//         }
+
+//         const currentQuestion = quiz.questions[currentQuestionIndex]
+//         const submittedAt = new Date()
+//         const questionStartTime = new Date(quiz.startTime)
+//         questionStartTime.setSeconds(questionStartTime.getSeconds() + currentQuestionIndex * currentQuestion.timeLimit)
+
+//         // Calculate time taken in milliseconds
+//         const timeTaken = submittedAt - questionStartTime
+
+//         // Check if answer is correct
+//         const isCorrect = answer.trim().toLowerCase() === currentQuestion.correctAnswer.trim().toLowerCase()
+
+//         // Calculate points based on time taken (faster = more points)
+//         // Maximum points is 1000, minimum is 100 for correct answers
+//         let points = 0
+//         if (isCorrect) {
+//             const maxTime = currentQuestion.timeLimit * 1000 // Convert to milliseconds
+//             points = Math.max(100, Math.floor(1000 - (timeTaken / maxTime) * 900))
+//         }
+
+//         // Create answer object
+//         const answerObj = {
+//             questionIndex: currentQuestionIndex,
+//             answer,
+//             submittedAt,
+//             isCorrect,
+//             timeTaken,
+//             points,
+//         }
+
+//         // Add answer to group
+//         group.answers.push(answerObj)
+//         group.totalPoints += points
+//         await group.save()
+
+//         res.status(200).json({
+//             success: true,
+//             isCorrect,
+//             points,
+//             totalPoints: group.totalPoints,
+//         })
+//     } catch (error) {
+//         res.status(400).json({ error: error.message })
+//     }
+// }
+
+
 const submitAnswer = async (req, res) => {
     try {
         const { groupId, answer } = req.body
@@ -414,8 +487,15 @@ const submitAnswer = async (req, res) => {
         // Calculate time taken in milliseconds
         const timeTaken = submittedAt - questionStartTime
 
-        // Check if answer is correct
-        const isCorrect = answer.trim().toLowerCase() === currentQuestion.correctAnswer.trim().toLowerCase()
+        // Check if answer is correct - handle both open-ended and multiple-choice questions
+        let isCorrect = false
+
+        if (currentQuestion.questionType === "open") {
+            isCorrect = answer.trim().toLowerCase() === currentQuestion.correctAnswer.trim().toLowerCase()
+        } else {
+            // For multiple-choice, compare answer directly with correctAnswer
+            isCorrect = answer === currentQuestion.correctAnswer
+        }
 
         // Calculate points based on time taken (faster = more points)
         // Maximum points is 1000, minimum is 100 for correct answers
@@ -483,6 +563,41 @@ const nextQuestion = async (req, res) => {
 }
 
 // Get current question
+// const getCurrentQuestion = async (req, res) => {
+//     try {
+//         const { code } = req.params
+//         const quiz = await WelcomeQuiz.findOne({ code })
+
+//         if (!quiz) {
+//             return res.status(404).json({ error: "Quiz not found" })
+//         }
+
+//         if (!quiz.isActive) {
+//             return res.status(400).json({ error: "Quiz is not active or has ended" })
+//         }
+
+//         const currentQuestionIndex = quiz.currentQuestion
+
+//         if (currentQuestionIndex < 0 || currentQuestionIndex >= quiz.questions.length) {
+//             return res.status(400).json({ error: "Invalid question index" })
+//         }
+
+//         const currentQuestion = quiz.questions[currentQuestionIndex]
+
+//         // Don't send the correct answer to the client
+//         const questionForClient = {
+//             text: currentQuestion.text,
+//             timeLimit: currentQuestion.timeLimit,
+//             index: currentQuestionIndex,
+//             total: quiz.questions.length,
+//         }
+
+//         res.status(200).json(questionForClient)
+//     } catch (error) {
+//         res.status(400).json({ error: error.message })
+//     }
+// }
+
 const getCurrentQuestion = async (req, res) => {
     try {
         const { code } = req.params
@@ -504,12 +619,21 @@ const getCurrentQuestion = async (req, res) => {
 
         const currentQuestion = quiz.questions[currentQuestionIndex]
 
-        // Don't send the correct answer to the client
-        const questionForClient = {
+        // Create a response object based on question type
+        let questionForClient = {
             text: currentQuestion.text,
             timeLimit: currentQuestion.timeLimit,
             index: currentQuestionIndex,
             total: quiz.questions.length,
+            questionType: currentQuestion.questionType
+        }
+
+        // For multiple-choice questions, include options but without correctAnswer
+        if (currentQuestion.questionType === "multiple_choice") {
+            questionForClient.options = currentQuestion.options.map(option => ({
+                text: option.text,
+                color: option.color
+            }))
         }
 
         res.status(200).json(questionForClient)
