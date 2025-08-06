@@ -34,11 +34,16 @@ class EmbeddingService {
     static getInstance() {
         if (this.instance === null && this.promise === null) {
             this.promise = (async () => {
-                // ✅ Fix cache error on Vercel
+                // 🛠️ 1. Set env variable just in case (good practice)
                 process.env['TRANSFORMERS_CACHE'] = '/tmp/transformers-cache';
 
-                const { AutoTokenizer, AutoModel } = await import('@xenova/transformers');
+                // ✅ 2. Import library
+                const { AutoTokenizer, AutoModel, env } = await import('@xenova/transformers');
 
+                // ✅ 3. Set the cache directory directly
+                env.cacheDir = '/tmp/transformers-cache';
+
+                // ✅ 4. Initialize service
                 const service = new EmbeddingService();
                 console.log("Initializing and downloading embedding model... (This happens only once)");
 
@@ -50,6 +55,7 @@ class EmbeddingService {
                 return this.instance;
             })();
         }
+
         return this.promise;
     }
 
