@@ -1,24 +1,47 @@
 // --- START OF REVISED FILE: EmbeddingService.js ---
 // const { AutoTokenizer, AutoModel } = require('@xenova/transformers');
 
-
+// process.env['TRANSFORMERS_CACHE'] = '/tmp/transformers-cache';
 
 class EmbeddingService {
     static instance = null;
     static promise = null;
 
+    // static getInstance() {
+    //     if (this.instance === null && this.promise === null) {
+    //         // If it's the very first call, create the promise.
+    //         this.promise = (async () => {
+    //             // DYNAMIC IMPORT: Use import() here instead of require() at the top.
+    //             // This is the fix for the ERR_REQUIRE_ESM error on Vercel.
+    //             const { AutoTokenizer, AutoModel } = await import('@xenova/transformers');
+
+    //             const service = new EmbeddingService();
+    //             console.log("Initializing and downloading embedding model... (This happens only once)");
+
+    //             // Now we can use the imported classes
+    //             service.tokenizer = await AutoTokenizer.from_pretrained('Xenova/paraphrase-multilingual-MiniLM-L12-v2');
+    //             service.model = await AutoModel.from_pretrained('Xenova/paraphrase-multilingual-MiniLM-L12-v2');
+
+    //             this.instance = service;
+    //             console.log("✅ Embedding model loaded successfully.");
+    //             return this.instance;
+    //         })();
+    //     }
+    //     // Return the promise. Subsequent calls will get the same promise.
+    //     return this.promise;
+    // }
+
     static getInstance() {
         if (this.instance === null && this.promise === null) {
-            // If it's the very first call, create the promise.
             this.promise = (async () => {
-                // DYNAMIC IMPORT: Use import() here instead of require() at the top.
-                // This is the fix for the ERR_REQUIRE_ESM error on Vercel.
+                // ✅ Fix cache error on Vercel
+                process.env['TRANSFORMERS_CACHE'] = '/tmp/transformers-cache';
+
                 const { AutoTokenizer, AutoModel } = await import('@xenova/transformers');
 
                 const service = new EmbeddingService();
                 console.log("Initializing and downloading embedding model... (This happens only once)");
 
-                // Now we can use the imported classes
                 service.tokenizer = await AutoTokenizer.from_pretrained('Xenova/paraphrase-multilingual-MiniLM-L12-v2');
                 service.model = await AutoModel.from_pretrained('Xenova/paraphrase-multilingual-MiniLM-L12-v2');
 
@@ -27,7 +50,6 @@ class EmbeddingService {
                 return this.instance;
             })();
         }
-        // Return the promise. Subsequent calls will get the same promise.
         return this.promise;
     }
 
