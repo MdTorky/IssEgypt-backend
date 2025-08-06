@@ -41,6 +41,10 @@ const welcomeQuizSchema = new mongoose.Schema({
     description: {
         type: String,
     },
+    showAnswersAfterEach: {
+        type: Boolean,
+        default: false
+    },
     code: {
         type: String,
         required: true,

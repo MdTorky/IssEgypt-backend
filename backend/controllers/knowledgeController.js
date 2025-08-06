@@ -1,0 +1,734 @@
+const Knowledge = require('../models/knowledgeModel')
+const Unknown = require('../models/unknownModel');
+const axios = require('axios');
+const mongoose = require('mongoose')
+const natural = require('natural'); // Free NLP library
+const stopword = require('stopword');
+const { newStemmer } = require('./Stemmer.js');
+const EmbeddingService = require('./EmbeddingService.js');
+class EnhancedSmartKnowledgeController {
+    constructor() {
+        this.embeddingService = null;
+        this.tokenizer = new natural.WordTokenizer();
+
+        // --- BIND ALL METHODS TO ENSURE 'this' IS ALWAYS CORRECT ---
+        this.getEmbedding = this.getEmbedding.bind(this);
+        this.containsArabic = this.containsArabic.bind(this);
+        this.extractKeywords = this.extractKeywords.bind(this);
+        this.findBestMatch = this.findBestMatch.bind(this);
+        this.handleEnhancedChat = this.handleEnhancedChat.bind(this);
+        this.createKnowledge = this.createKnowledge.bind(this);
+        this.updateKnowledge = this.updateKnowledge.bind(this);
+        this.deleteKnowledge = this.deleteKnowledge.bind(this);
+        this.getAnalytics = this.getAnalytics.bind(this);
+    }
+
+    // extractKeywords(text, language = 'en') {
+    //     if (!text) return [];
+
+    //     // 1. Tokenize the text into individual words
+    //     const tokens = this.tokenizer.tokenize(text.toLowerCase());
+
+    //     // 2. Determine which stopwords to use (English or Arabic)
+    //     const stopwords = language === 'ar' ? stopword.ar : stopword.en;
+
+    //     // 3. Remove the common stopwords
+    //     const relevantTokens = stopword.removeStopwords(tokens, stopwords);
+
+    //     // 4. Filter out any remaining short words (noise) and return unique keywords
+    //     return [...new Set(relevantTokens.filter(token => token.length > 2))];
+    // }
+
+    extractKeywords(text, language = 'en') {
+        if (!text) return [];
+
+        // Simple whitespace tokenization is now the best approach,
+        // as we let the Atlas analyzer handle the linguistics.
+        const tokens = text.toLowerCase().split(/\s+/);
+
+        // We only filter for length. No stopword removal needed here.
+        return [...new Set(tokens.filter(token => token.length > 2))];
+    }
+
+    async initializeEmbeddingService() {
+        this.embeddingService = await EmbeddingService.getInstance();
+        console.log("Embedding service initialized.");
+    }
+
+
+    async getEmbedding(text, language = 'en') {
+        if (!this.embeddingService) {
+            this.embeddingService = await EmbeddingService.getInstance();
+        }
+        return this.embeddingService.getEmbedding(text, language);
+    }
+
+    containsArabic(text) {
+        return /[\u0600-\u06FF]/.test(text);
+    }
+
+    normalizeArabic(text = "") {
+        return text
+            .replace(/[إأآا]/g, "ا")
+            .replace(/ى/g, "ي")
+            .replace(/ؤ/g, "و")
+            .replace(/ئ/g, "ي")
+            .replace(/ة/g, "ه")
+            .replace(/[^\w\s\u0600-\u06FF]/g, '') // Remove punctuation
+            .replace(/\s+/g, " ")
+            .trim()
+            .toLowerCase();
+    }
+
+    // Preprocess text for better matching
+    preprocessText(text, isArabic = false) {
+        if (!text) return '';
+        let processed = text.toLowerCase();
+        let tokens;
+        let stemmedTokens;
+
+
+        if (isArabic || this.containsArabic(processed)) {
+            processed = this.normalizeArabic(processed);
+            tokens = this.tokenizer.tokenize(processed);
+            tokens = stopword.removeStopwords(tokens, stopword.ar);
+            // CORRECTED: Use the imported stemmer object directly
+            stemmedTokens = tokens.map(token => this.arabicStemmer.stem(token));
+        } else {
+            tokens = this.tokenizer.tokenize(processed);
+            tokens = stopword.removeStopwords(tokens);
+            stemmedTokens = tokens.map(token => this.englishStemmer.stem(token));
+        }
+
+        // This part remains the same
+        let expandedTokens = [];
+        tokens.forEach(token => {
+            expandedTokens.push(token);
+            for (const [key, values] of Object.entries(this.synonyms)) {
+                if (values.includes(token) && !expandedTokens.includes(key)) {
+                    expandedTokens.push(key);
+                }
+            }
+        });
+
+        return stemmedTokens.join(' ');
+    }
+
+
+
+    // اجيب لينك الدرايف منين؟
+    // مين اللي عمل الموقع ده؟
+
+
+
+
+
+
+    // In EnhancedSmartKnowledgeController
+    async findBestMatch(userInput) {
+        try {
+            const userLang = this.containsArabic(userInput) ? 'ar' : 'en';
+            console.log(`\n--- New Hybrid Search ---`);
+            console.log(`🌐 Lang: ${userLang} | 💬 Query: "${userInput}"`);
+
+            const embeddingService = await EmbeddingService.getInstance();
+            const queryVector = await embeddingService.getEmbedding(userInput, userLang);
+
+            const textSearchKeywords = this.extractKeywords(userInput, userLang).join(' ');
+
+            // Get candidates from both searches
+            const [vectorCandidates, textCandidates] = await Promise.all([
+                Knowledge.aggregate([
+                    { $vectorSearch: { index: 'default', path: 'embedding', queryVector: queryVector, numCandidates: 150, limit: 5, filter: { language: { $eq: userLang } } } },
+                    { $addFields: { score: { $meta: 'vectorSearchScore' } } }
+                ]),
+                Knowledge.aggregate([
+                    {
+                        $search: {
+                            index: 'default',
+                            compound: {
+                                should: [
+                                    { text: { query: userInput, path: "text", score: { boost: { value: 3 } } } },
+                                    { text: { query: textSearchKeywords, path: "keywords" } }
+                                ],
+                                filter: [{ term: { path: 'language', query: userLang } }]
+                            }
+                        }
+                    },
+                    { $limit: 5 },
+                    { $addFields: { score: { $meta: 'searchScore' } } }
+                ])
+            ]);
+
+            console.log(`🔍 Vector found: ${vectorCandidates.length} | Text found: ${textCandidates.length}`);
+
+            // RRF Logic
+            const rankedResults = {};
+            const K = 60;
+
+            vectorCandidates.forEach((doc, i) => {
+                const rank = i + 1;
+                if (!rankedResults[doc._id]) rankedResults[doc._id] = { doc, rrf_score: 0 };
+                rankedResults[doc._id].rrf_score += 1 / (K + rank);
+            });
+
+            textCandidates.forEach((doc, i) => {
+                const rank = i + 1;
+                if (!rankedResults[doc._id]) rankedResults[doc._id] = { doc, rrf_score: 0 };
+                rankedResults[doc._id].rrf_score += 1 / (K + rank);
+            });
+
+            const finalRankedList = Object.values(rankedResults).sort((a, b) => b.rrf_score - a.rrf_score);
+
+            if (finalRankedList.length > 0) {
+                const bestResult = finalRankedList[0].doc;
+                bestResult.rrf_score = finalRankedList[0].rrf_score;
+                console.log(`🎯 RRF Chose: "${bestResult.text.substring(0, 40)}..." (Score: ${bestResult.rrf_score.toFixed(4)})`);
+                return bestResult;
+            }
+
+            console.log("❌ No candidates found.");
+            return null;
+
+        } catch (error) {
+            console.error('❌ Critical error in hybrid search:', error);
+            return null;
+        }
+    }
+
+
+
+
+
+
+
+
+    async handleEnhancedChat(req, res) {
+        const userInput = req.body.message;
+        try {
+            const matchedKnowledge = await this.findBestMatch(userInput);
+            let aiReply;
+
+            if (matchedKnowledge) {
+                console.log(`✅ Final Match (RRF Score: ${matchedKnowledge.rrf_score.toFixed(4)}): "${matchedKnowledge.text}"`);
+                Knowledge.findByIdAndUpdate(matchedKnowledge._id, {
+                    $inc: { usageCount: 1 },
+                    lastUsed: new Date()
+                }).exec();
+
+                const language = matchedKnowledge.language;
+                const prompt = `You are E-GPT, the official AI assistant for ISS Egypt. Your persona is a friendly, helpful senior student from ISS Egypt 🇪🇬.
+Your task is to answer the user's question based STRICTLY and ONLY on the "Context Information" provided.
+
+**Context Information:**
+---
+${matchedKnowledge.answer}
+---
+
+**Instructions:**
+1. Rephrase the context in a natural, conversational tone. Do not just copy it.
+2. Use relevant emojis (like ✨, 🎓, 📍) to make the response engaging and easy to read.
+3. Ensure all core information and any links from the context are accurately included.
+4. Your entire response MUST be in ${language}. If the user is asking in Arabic, use a friendly Egyptian dialect.
+5. Start with a friendly opening like "Of course!", "Absolutely!", or the Arabic equivalent (e.g., "أكيد!", "طبعًا!").
+6.  If there are steps to an answer, list them in order.
+7.  Make the answer easy to read not just a block of words.
+
+**User's Question:** "${userInput}"
+
+**Your Friendly Answer (in ${language}):**`;
+
+                aiReply = await this.callFreeAI(prompt);
+
+            } else {
+                // This block runs if findBestMatch returns null
+                console.log(`❌ No confident match found. Saving as unknown.`);
+                await Unknown.create({
+                    question: userInput,
+                    ipAddress: req.ip,
+                    userAgent: req.headers['user-agent'],
+                    userSession: req.sessionID || null
+                });
+
+                const generalPrompt = `You are E-GPT, the official AI assistant for the ISS Egypt Gateway website (for Egyptian students at UTM).
+The user asked: "${userInput}"
+Your knowledge base does not have a specific answer for this.
+Please provide a helpful, general response. Politely inform the user that you don't have specific details on this topic and suggest they contact the ISS Egypt administration for official information.
+Keep the response friendly and supportive. If the user asked in Arabic, respond in Arabic.`;
+
+                aiReply = await this.callFreeAI(generalPrompt);
+            }
+
+            // --- 3. RETURN THE FINAL RESPONSE TO THE USER ---
+            return res.json({ reply: aiReply });
+
+        } catch (error) {
+            console.error('❌ Enhanced chat error:', error);
+            return res.status(500).json({
+                reply: 'Sorry, I encountered an error. Please try again later.'
+            });
+        }
+    }
+
+
+
+
+
+
+    extractAdvancedKeywords(text) {
+        const processed = this.preprocessText(text)
+        const tokens = processed.split(" ").filter((token) => token.length > 2)
+        const entities = this.extractEntities(text)
+        return [...new Set([...tokens, ...entities])]
+    }
+
+    extractEntities(text) {
+        const entities = []
+        const textLower = text.toLowerCase()
+
+        this.entityExtractor.roles.forEach((role) => {
+            if (textLower.includes(role)) {
+                entities.push(role)
+            }
+        })
+
+        this.entityExtractor.organizations.forEach((org) => {
+            if (textLower.includes(org)) {
+                entities.push(org)
+            }
+        })
+
+        return entities
+    }
+
+    // Call multiple free AI services with fallback
+    async callFreeAI(prompt) {
+        const freeAIServices = [
+            {
+                name: 'OpenRouter OpenAI',
+                url: 'https://openrouter.ai/api/v1/chat/completions',
+                model: 'openai/gpt-4o-mini',
+                headers: {
+                    'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+                    'Content-Type': 'application/json'
+                }
+            },
+            {
+                name: 'OpenRouter Qwen',
+                url: 'https://openrouter.ai/api/v1/chat/completions',
+                model: 'qwen/qwen2.5-vl-32b-instruct:free',
+                headers: {
+                    'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+                    'Content-Type': 'application/json'
+                }
+            },
+            // {
+            //     name: 'Deepseek',
+            //     url: 'https://openrouter.ai/api/v1/chat/completions',
+            //     model: 'deepseek/deepseek-chat-v3-0324:free',
+            //     headers: {
+            //         'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+            //         'Content-Type': 'application/json'
+            //     }
+            // },
+            // {
+            //     name: 'OpenRouter Gemma',
+            //     url: 'https://openrouter.ai/api/v1/chat/completions',
+            //     model: 'google/gemma-2-9b-it:free',
+            //     headers: {
+            //         'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+            //         'Content-Type': 'application/json'
+            //     }
+            // },
+            // {
+            //     name: 'Hugging Face',
+            //     url: 'https://api-inference.huggingface.co/models/microsoft/DialoGPT-medium',
+            //     headers: {
+            //         'Authorization': `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
+            //         'Content-Type': 'application/json'
+            //     }
+            // }
+        ];
+
+        for (const service of freeAIServices) {
+            try {
+                let response;
+
+                if (service.name.includes('OpenRouter')) {
+                    response = await axios.post(service.url, {
+                        model: service.model,
+                        messages: [{ role: 'user', content: prompt }],
+                        max_tokens: 300,
+                        temperature: 0.7
+                    }, { headers: service.headers });
+
+                    return response.data.choices[0].message.content;
+
+                } else if (service.name === 'Hugging Face') {
+                    response = await axios.post(service.url, {
+                        inputs: prompt,
+                        parameters: {
+                            max_length: 300,
+                            temperature: 0.7
+                        }
+                    }, { headers: service.headers });
+
+                    return response.data.generated_text || response.data[0].generated_text;
+                }
+
+            } catch (error) {
+                console.error(`${service.name} failed:`, error.message);
+                continue; // Try next service
+            }
+        }
+
+        // If all AI services fail, return a helpful message
+        return "I'm having trouble connecting to my AI services right now. Please try again in a moment, or contact our support team for immediate assistance.";
+    }
+
+    // Learn from interactions to improve future responses
+    async learnFromInteraction(userInput, aiResponse, matchedKnowledge) {
+        try {
+            // Extract keywords from user input
+            const newKeywords = this.extractKeywords(userInput);
+
+            // Update the matched knowledge with new keywords
+            if (matchedKnowledge && newKeywords.length > 0) {
+                const existingKeywords = matchedKnowledge.keywords || [];
+                const uniqueNewKeywords = newKeywords.filter(k => !existingKeywords.includes(k));
+
+                if (uniqueNewKeywords.length > 0) {
+                    await Knowledge.findByIdAndUpdate(matchedKnowledge._id, {
+                        $push: { keywords: { $each: uniqueNewKeywords } }
+                    });
+                }
+            }
+
+            // You could also create new knowledge entries based on successful interactions
+            // This would require admin approval in a real system
+
+        } catch (error) {
+            console.error('Error learning from interaction:', error);
+        }
+    }
+
+
+    extractKeywords(text, language = 'en') {
+        if (!text) return [];
+        let tokens;
+
+        if (language === 'ar') {
+            const cleanedText = text.replace(/[^\u0600-\u06FF\s]/g, "").replace(/\s+/g, " ").trim();
+            tokens = cleanedText.split(/\s+/);
+        } else {
+            tokens = this.tokenizer.tokenize(text.toLowerCase());
+        }
+
+        const stopwords = language === 'ar' ? stopword.ar : stopword.en;
+        const relevantTokens = stopword.removeStopwords(tokens, stopwords);
+        return [...new Set(relevantTokens.filter(token => token.length > 2))];
+    }
+
+
+
+    extractArabicKeywords(text) {
+        if (!text) return []
+
+        const arabicStopWords = [
+            "من",
+            "في",
+            "على",
+            "ما",
+            "و",
+            "هو",
+            "هي",
+            "مع",
+            "عن",
+            "إلى",
+            "هذا",
+            "ذلك",
+            "كل",
+            "أن",
+            "إن",
+            "لم",
+        ]
+        const words = text
+            .replace(/[^\u0600-\u06FF\s]/g, "")
+            .split(/\s+/)
+            .filter((word) => word.length > 2 && !arabicStopWords.includes(word))
+
+        return [...new Set(words)]
+    }
+
+
+    async getAnalytics(req, res) {
+        try {
+            // 1. Get the 10 most frequently used knowledge items
+            const mostPopular = await Knowledge.find({ isActive: true })
+                .sort({ usageCount: -1 })
+                .limit(10)
+                .select('text language usageCount lastUsed'); // Only select relevant fields
+
+            // 2. Get the 10 most recently used knowledge items
+            const recentlyUsed = await Knowledge.find({ isActive: true })
+                .sort({ lastUsed: -1 })
+                .limit(10)
+                .select('text language usageCount lastUsed');
+
+            // 3. Analyze the most frequent UNKNOWN questions
+            // This is extremely valuable for knowing what to add to the knowledge base!
+            const frequentUnknown = await Unknown.aggregate([
+                {
+                    $group: {
+                        // Group similar questions by their lowercase version
+                        _id: { $toLower: "$question" },
+                        // Count how many times each unique question appears
+                        count: { $sum: 1 },
+                        // Get the timestamp of the most recent time it was asked
+                        lastAsked: { $max: "$createdAt" }
+                    }
+                },
+                {
+                    // Sort by the most frequently asked questions first
+                    $sort: { count: -1 }
+                },
+                {
+                    // Limit to the top 15 most common unknown questions
+                    $limit: 15
+                },
+                {
+                    // Rename the '_id' field to 'question' for a cleaner output
+                    $project: {
+                        _id: 0,
+                        question: "$_id",
+                        count: 1,
+                        lastAsked: 1
+                    }
+                }
+            ]);
+
+            // 4. Get overall statistics
+            const totalKnowledgeEntries = await Knowledge.countDocuments();
+            const totalUnknownQuestions = await Unknown.countDocuments();
+
+            // 5. Send the complete analytics object back to the admin
+            res.status(200).json({
+                totalKnowledgeEntries,
+                totalUnknownQuestions,
+                mostPopular,
+                recentlyUsed,
+                frequentUnknown
+            });
+
+        } catch (error) {
+            console.error("Error fetching analytics:", error);
+            res.status(500).json({ error: "Failed to retrieve analytics data." });
+        }
+    }
+
+
+
+    async createKnowledge(req, res) {
+        try {
+            const { text, answer, language, keywords: manualKeywords = [], category, priority } = req.body;
+            const embeddingService = await EmbeddingService.getInstance();
+
+            console.log("Generating synthetic questions for rephrasing...");
+            const generationPrompt = `Based on the following question and answer, generate 3 additional, distinct ways a user might ask this question in the same language. The user might use slang, abbreviations, or different phrasing.
+        Original Question: "${text}"
+        Answer: "${answer}"
+        Output ONLY a JavaScript-style array of strings. For example: ["question 1", "question 2", "question 3"]`;
+
+            const response = await this.callFreeAI(generationPrompt);
+            let syntheticQuestions = [];
+            try {
+                syntheticQuestions = JSON.parse(response.match(/\[.*\]/s)[0]);
+            } catch (e) {
+                console.error("Failed to parse synthetic questions:", response);
+            }
+
+            const allQuestions = [text, ...syntheticQuestions];
+            console.log("All question variants to be indexed:", allQuestions);
+
+            for (const questionText of allQuestions) {
+                // **CRITICAL FIX 1:** Always extract keywords for ALL languages.
+                const extractedFromText = this.extractKeywords(questionText, language);
+                const extractedFromAnswer = this.extractKeywords(answer, language);
+
+                const combinedKeywords = [
+                    ...manualKeywords.map(k => k.toLowerCase()),
+                    ...extractedFromText,
+                    ...extractedFromAnswer
+                ];
+                const allUniqueKeywords = [...new Set(combinedKeywords)];
+
+                const textToEmbed = `${questionText} ${answer} ${allUniqueKeywords.join(' ')}`;
+
+                // **CRITICAL FIX 2:** Pass the language to the embedding service.
+                const embedding = await embeddingService.getEmbedding(textToEmbed, language);
+
+                await Knowledge.create({
+                    text: questionText,
+                    answer,
+                    language,
+                    embedding,
+                    keywords: allUniqueKeywords,
+                    category: category || "other",
+                    priority: priority || 1,
+                    isActive: true,
+                });
+            }
+
+            res.status(201).json({
+                message: `Knowledge saved successfully. Created 1 canonical and ${syntheticQuestions.length} synthetic entries.`,
+                canonicalQuestion: text,
+                syntheticQuestions
+            });
+        } catch (error) {
+            console.error("Error creating knowledge:", error);
+            res.status(500).json({ error: "Failed to create knowledge: " + error.message });
+        }
+    }
+
+
+
+
+
+
+
+    async updateKnowledge(req, res) {
+        const { id } = req.params;
+
+        // 1. Validate the MongoDB ID
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(404).json({ error: "No such knowledge entry found." });
+        }
+
+        try {
+            const {
+                text,
+                answer,
+                keywords: manualKeywords,
+                priority,
+                category
+            } = req.body;
+
+            // 2. Find the existing document to get its language
+            const existingKnowledge = await Knowledge.findById(id);
+            if (!existingKnowledge) {
+                return res.status(404).json({ error: "No such knowledge entry found." });
+            }
+
+            // 3. Prepare the update object
+            const updateData = { text, answer, priority, category };
+
+            // 4. Check if the core text has changed to decide if we need to regenerate data
+            const textHasChanged = text && text !== existingKnowledge.text;
+            const answerHasChanged = answer && answer !== existingKnowledge.answer;
+
+            if (textHasChanged || answerHasChanged || manualKeywords) {
+                // If text or answer has changed, we MUST regenerate the embedding
+                console.log("Text/Answer changed, regenerating embedding and keywords...");
+
+                const newText = text || existingKnowledge.text;
+                const newAnswer = answer || existingKnowledge.answer;
+
+                // Regenerate keywords using the hybrid approach
+                const extractedFromText = this.extractKeywords(newText, existingKnowledge.language);
+                const extractedFromAnswer = this.extractKeywords(newAnswer, existingKnowledge.language);
+                const combinedKeywords = [
+                    ...(manualKeywords || existingKnowledge.keywords).map(k => k.toLowerCase()),
+                    ...extractedFromText,
+                    ...extractedFromAnswer
+                ];
+                updateData.keywords = [...new Set(combinedKeywords)];
+
+                // Regenerate embedding
+                const textToEmbed = `${newText} ${newAnswer}`;
+                const embeddingService = await EmbeddingService.getInstance();
+                updateData.embedding = await embeddingService.getEmbedding(textToEmbed);
+            }
+
+            // 5. Perform the update in the database
+            const updatedKnowledge = await Knowledge.findByIdAndUpdate(id, updateData, { new: true }); // {new: true} returns the updated doc
+
+            res.status(200).json({
+                message: "Knowledge updated successfully.",
+                data: updatedKnowledge
+            });
+
+        } catch (error) {
+            console.error("Error updating knowledge:", error);
+            res.status(500).json({ error: "Failed to update knowledge: " + error.message });
+        }
+    }
+
+    async deleteKnowledge(req, res) {
+        const { id } = req.params;
+
+        // 1. Validate the MongoDB ID
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(404).json({ error: "No such knowledge entry found." });
+        }
+
+        try {
+            // 2. Find and delete the document in one step
+            const deletedKnowledge = await Knowledge.findByIdAndDelete(id);
+
+            // 3. Check if a document was actually found and deleted
+            if (!deletedKnowledge) {
+                return res.status(404).json({ error: "No such knowledge entry found." });
+            }
+
+            res.status(200).json({
+                message: "Knowledge deleted successfully.",
+                deletedItem: deletedKnowledge
+            });
+        } catch (error) {
+            console.error("Error deleting knowledge:", error);
+            res.status(500).json({ error: "Failed to delete knowledge: " + error.message });
+        }
+    }
+
+
+
+}
+
+
+
+// Initialize the smart controller
+// const smartController = new SmartKnowledgeController();
+const enhancedSmartController = new EnhancedSmartKnowledgeController()
+// Export enhanced functions
+module.exports = {
+
+    // Original functions
+    getAll: async (req, res) => {
+        const items = await Knowledge.find({}).sort({ createdAt: -1 });
+        res.status(200).json(items);
+    },
+
+    getItem: async (req, res) => {
+        const { id } = req.params;
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(404).json({ error: "No Such Item Found" });
+        }
+        const item = await Knowledge.findById(id);
+        if (!item) {
+            return res.status(404).json({ error: "No Such Item Found" });
+        }
+        res.status(200).json(item);
+    },
+
+
+    createKnowledge: enhancedSmartController.createKnowledge.bind(enhancedSmartController),
+
+    // Enhanced chat handler
+    handleChatRequest: enhancedSmartController.handleEnhancedChat.bind(enhancedSmartController),
+
+    updateKnowledge: enhancedSmartController.updateKnowledge.bind(enhancedSmartController),
+    deleteKnowledge: enhancedSmartController.deleteKnowledge.bind(enhancedSmartController),
+    getAnalytics: enhancedSmartController.getAnalytics.bind(enhancedSmartController)
+
+
+};

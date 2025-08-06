@@ -2,6 +2,9 @@ require('dotenv').config();
 
 const express = require('express');
 const mongoose = require('mongoose');
+const MongoStore = require('connect-mongo');
+const session = require('express-session');
+const Fuse = require('fuse.js');
 const formRoutes = require('./routes/forms');
 const memberRoutes = require('./routes/members');
 const internRoutes = require('./routes/internships');
@@ -21,6 +24,9 @@ const quizRoutes = require('./routes/quiz');
 const serviceRoutes = require('./routes/services');
 const HelpingRoutes = require('./routes/helping');
 const welcomeRoutes = require("./routes/welcome");
+const knowledgeRoutes = require("./routes/knowledge");
+
+const Unknown = require('./models/unknownModel');
 // const { OpenAI } = require('openai'); // Correct way to import
 
 
@@ -37,6 +43,29 @@ const path = require('path');
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// const mongoUri = process.env.MONGODB_URI;
+
+// if (!mongoUri) {
+//     console.error("FATAL ERROR: MONGO_URI is not defined in your .env file.");
+//     process.exit(1); // Exit the application if the database string is missing
+// }
+
+// console.log("Connecting to:", mongoUri);
+
+// app.use(session({
+//     secret: process.env.SESSION_SECRET, // A secret key to sign the session ID cookie
+//     resave: false, // Don't save session if unmodified
+//     saveUninitialized: true, // Save new sessions
+//     store: MongoStore.create({
+//         mongoUrl: mongoUri,
+//         collectionName: 'sessions' // The name of the collection where sessions will be stored
+//     }),
+//     cookie: {
+//         maxAge: 1000 * 60 * 15 // Set cookie to expire in 15 minutes of inactivity
+//     }
+// }));
+
 
 // routes
 app.use('/api/forms', formRoutes);
@@ -59,13 +88,9 @@ app.use('/api/quiz', quizRoutes);
 app.use('/api/service', serviceRoutes);
 app.use('/api/helping', HelpingRoutes);
 app.use("/api/welcome", welcomeRoutes);
+app.use("/api/knowledge", knowledgeRoutes);
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-
-
-
-
 
 
 
@@ -82,6 +107,7 @@ mongoose.connect(process.env.MONGO_URI, {})
     .catch((err) => {
         console.log(err);
     });
+
 
 
 
