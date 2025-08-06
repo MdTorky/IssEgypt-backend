@@ -1,5 +1,5 @@
 // --- START OF REVISED FILE: EmbeddingService.js ---
-const { AutoTokenizer, AutoModel } = require('@xenova/transformers');
+// const { AutoTokenizer, AutoModel } = require('@xenova/transformers');
 
 
 
@@ -9,23 +9,25 @@ class EmbeddingService {
 
     static getInstance() {
         if (this.instance === null && this.promise === null) {
+            // If it's the very first call, create the promise.
             this.promise = (async () => {
+                // DYNAMIC IMPORT: Use import() here instead of require() at the top.
+                // This is the fix for the ERR_REQUIRE_ESM error on Vercel.
+                const { AutoTokenizer, AutoModel } = await import('@xenova/transformers');
+
                 const service = new EmbeddingService();
-                console.log("Initializing embedding model...");
+                console.log("Initializing and downloading embedding model... (This happens only once)");
 
-                try {
-                    service.tokenizer = await AutoTokenizer.from_pretrained('Xenova/paraphrase-multilingual-MiniLM-L12-v2');
-                    service.model = await AutoModel.from_pretrained('Xenova/paraphrase-multilingual-MiniLM-L12-v2');
-                    this.instance = service;
-                    console.log("✅ Embedding model loaded successfully.");
-                } catch (error) {
-                    console.error("❌ Failed to load embedding model:", error);
-                    throw error;
-                }
+                // Now we can use the imported classes
+                service.tokenizer = await AutoTokenizer.from_pretrained('Xenova/paraphrase-multilingual-MiniLM-L12-v2');
+                service.model = await AutoModel.from_pretrained('Xenova/paraphrase-multilingual-MiniLM-L12-v2');
 
+                this.instance = service;
+                console.log("✅ Embedding model loaded successfully.");
                 return this.instance;
             })();
         }
+        // Return the promise. Subsequent calls will get the same promise.
         return this.promise;
     }
 
