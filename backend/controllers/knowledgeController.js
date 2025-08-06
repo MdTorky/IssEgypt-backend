@@ -4,7 +4,7 @@ const axios = require('axios');
 const mongoose = require('mongoose')
 const natural = require('natural'); // Free NLP library
 const stopword = require('stopword');
-const { newStemmer } = require('./Stemmer.js');
+const { newStemmer } = require('../middleware/Stemmer.js');
 const EmbeddingService = require('./EmbeddingService.js');
 class EnhancedSmartKnowledgeController {
     constructor() {
