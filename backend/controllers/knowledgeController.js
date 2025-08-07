@@ -334,24 +334,24 @@ Keep the response friendly and supportive. If the user asked in Arabic, respond 
                     'Content-Type': 'application/json'
                 }
             },
-            // {
-            //     name: 'OpenRouter Qwen',
-            //     url: 'https://openrouter.ai/api/v1/chat/completions',
-            //     model: 'qwen/qwen2.5-vl-32b-instruct:free',
-            //     headers: {
-            //         'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
-            //         'Content-Type': 'application/json'
-            //     }
-            // },
-            // {
-            //     name: 'Deepseek',
-            //     url: 'https://openrouter.ai/api/v1/chat/completions',
-            //     model: 'deepseek/deepseek-chat-v3-0324:free',
-            //     headers: {
-            //         'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
-            //         'Content-Type': 'application/json'
-            //     }
-            // },
+            {
+                name: 'OpenRouter Qwen',
+                url: 'https://openrouter.ai/api/v1/chat/completions',
+                model: 'qwen/qwen2.5-vl-32b-instruct:free',
+                headers: {
+                    'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+                    'Content-Type': 'application/json'
+                }
+            },
+            {
+                name: 'Deepseek',
+                url: 'https://openrouter.ai/api/v1/chat/completions',
+                model: 'deepseek/deepseek-chat-v3-0324:free',
+                headers: {
+                    'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+                    'Content-Type': 'application/json'
+                }
+            },
             {
                 name: 'Hugging Face Novita',
                 provider: 'huggingface',
