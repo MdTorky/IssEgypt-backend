@@ -303,25 +303,46 @@ Keep the response friendly and supportive. If the user asked in Arabic, respond 
 
     // Call multiple free AI services with fallback
     async callFreeAI(prompt) {
+
+        const { InferenceClient } = await import('@huggingface/inference');
+
         const freeAIServices = [
+            // {
+            //     name: 'OpenRouter OpenAI',
+            //     url: 'https://openrouter.ai/api/v1/chat/completions',
+            //     model: 'openai/gpt-4o-mini',
+            //     headers: {
+            //         'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+            //         'Content-Type': 'application/json'
+            //     }
+            // },
+            // {
+            //     name: 'OpenRouter OpenAI',
+            //     url: 'https://openrouter.ai/api/v1/chat/completions',
+            //     model: 'openai/gpt-oss-120b',
+            //     headers: {
+            //         'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+            //         'Content-Type': 'application/json'
+            //     }
+            // },
             {
                 name: 'OpenRouter OpenAI',
                 url: 'https://openrouter.ai/api/v1/chat/completions',
-                model: 'openai/gpt-4o-mini',
+                model: 'openai/gpt-oss-20b:free',
                 headers: {
                     'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
                     'Content-Type': 'application/json'
                 }
             },
-            {
-                name: 'OpenRouter Qwen',
-                url: 'https://openrouter.ai/api/v1/chat/completions',
-                model: 'qwen/qwen2.5-vl-32b-instruct:free',
-                headers: {
-                    'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
-                    'Content-Type': 'application/json'
-                }
-            },
+            // {
+            //     name: 'OpenRouter Qwen',
+            //     url: 'https://openrouter.ai/api/v1/chat/completions',
+            //     model: 'qwen/qwen2.5-vl-32b-instruct:free',
+            //     headers: {
+            //         'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+            //         'Content-Type': 'application/json'
+            //     }
+            // },
             // {
             //     name: 'Deepseek',
             //     url: 'https://openrouter.ai/api/v1/chat/completions',
@@ -331,23 +352,13 @@ Keep the response friendly and supportive. If the user asked in Arabic, respond 
             //         'Content-Type': 'application/json'
             //     }
             // },
-            // {
-            //     name: 'OpenRouter Gemma',
-            //     url: 'https://openrouter.ai/api/v1/chat/completions',
-            //     model: 'google/gemma-2-9b-it:free',
-            //     headers: {
-            //         'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
-            //         'Content-Type': 'application/json'
-            //     }
-            // },
-            // {
-            //     name: 'Hugging Face',
-            //     url: 'https://api-inference.huggingface.co/models/microsoft/DialoGPT-medium',
-            //     headers: {
-            //         'Authorization': `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
-            //         'Content-Type': 'application/json'
-            //     }
-            // }
+            {
+                name: 'Hugging Face Novita',
+                provider: 'huggingface',
+                model: 'openai/gpt-oss-120b',
+                hfProvider: 'novita',
+                token: process.env.HF_TOKEN
+            }
         ];
 
         for (const service of freeAIServices) {
@@ -364,16 +375,21 @@ Keep the response friendly and supportive. If the user asked in Arabic, respond 
 
                     return response.data.choices[0].message.content;
 
-                } else if (service.name === 'Hugging Face') {
-                    response = await axios.post(service.url, {
-                        inputs: prompt,
-                        parameters: {
-                            max_length: 300,
-                            temperature: 0.7
-                        }
-                    }, { headers: service.headers });
+                } else if (service.provider === 'huggingface') {
+                    const client = new InferenceClient(service.token);
 
-                    return response.data.generated_text || response.data[0].generated_text;
+                    const chatCompletion = await client.chatCompletion({
+                        provider: service.hfProvider,
+                        model: service.model,
+                        messages: [
+                            {
+                                role: "user",
+                                content: prompt,
+                            },
+                        ],
+                    });
+
+                    return chatCompletion.choices[0].message.content;
                 }
 
             } catch (error) {
