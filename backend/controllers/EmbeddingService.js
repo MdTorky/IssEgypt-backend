@@ -34,16 +34,11 @@ class EmbeddingService {
     static getInstance() {
         if (this.instance === null && this.promise === null) {
             this.promise = (async () => {
-                // 🛠️ 1. Set env variable just in case (good practice)
-                process.env['TRANSFORMERS_CACHE'] = '/tmp/transformers-cache';
-
-                // ✅ 2. Import library
                 const { AutoTokenizer, AutoModel, env } = await import('@xenova/transformers');
 
-                // ✅ 3. Set the cache directory directly
+                // ✅ SET CACHE DIR TO /tmp TO AVOID READ-ONLY ERROR
                 env.cacheDir = '/tmp/transformers-cache';
 
-                // ✅ 4. Initialize service
                 const service = new EmbeddingService();
                 console.log("Initializing and downloading embedding model... (This happens only once)");
 
@@ -51,13 +46,13 @@ class EmbeddingService {
                 service.model = await AutoModel.from_pretrained('Xenova/paraphrase-multilingual-MiniLM-L12-v2');
 
                 this.instance = service;
-                console.log("✅ Embedding model loaded successfully.");
                 return this.instance;
             })();
         }
 
         return this.promise;
     }
+
 
     // Add text preprocessing method for consistency
     preprocessText(text, language = 'en') {
@@ -129,6 +124,9 @@ class EmbeddingService {
             throw error;
         }
     }
+
+
+
 
     // DEBUGGING METHOD - Add this to your EmbeddingService.js
     async debugEmbeddingMismatch(userInput = "اجيب لينك الدرايف منين؟", Knowledge) {
