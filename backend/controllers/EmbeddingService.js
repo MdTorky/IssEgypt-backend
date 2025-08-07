@@ -31,13 +31,42 @@ class EmbeddingService {
     //     return this.promise;
     // }
 
+    // static getInstance() {
+    //     if (this.instance === null && this.promise === null) {
+    //         this.promise = (async () => {
+    //             const { AutoTokenizer, AutoModel, env } = await import('@xenova/transformers');
+
+    //             // ✅ SET CACHE DIR TO /tmp TO AVOID READ-ONLY ERROR
+    //             env.cacheDir = '/tmp/transformers-cache';
+
+    //             const service = new EmbeddingService();
+    //             console.log("Initializing and downloading embedding model... (This happens only once)");
+
+    //             service.tokenizer = await AutoTokenizer.from_pretrained('Xenova/paraphrase-multilingual-MiniLM-L12-v2');
+    //             service.model = await AutoModel.from_pretrained('Xenova/paraphrase-multilingual-MiniLM-L12-v2');
+
+    //             this.instance = service;
+    //             return this.instance;
+    //         })();
+    //     }
+
+    //     return this.promise;
+    // }
+
+
     static getInstance() {
         if (this.instance === null && this.promise === null) {
+            // If it's the very first call, create the promise.
             this.promise = (async () => {
+                // DYNAMIC IMPORT: This is the key to using ESM packages in a CJS file.
+                // It loads the library asynchronously.
                 const { AutoTokenizer, AutoModel, env } = await import('@xenova/transformers');
 
-                // ✅ SET CACHE DIR TO /tmp TO AVOID READ-ONLY ERROR
-                env.cacheDir = '/tmp/transformers-cache';
+                // --- CRITICAL FIX FOR VERCEL ---
+                // Set the cache directory immediately after importing.
+                // This tells the library where to save the model files.
+                env.cacheDir = '/tmp';
+                // --- END OF CRITICAL FIX ---
 
                 const service = new EmbeddingService();
                 console.log("Initializing and downloading embedding model... (This happens only once)");
@@ -46,10 +75,11 @@ class EmbeddingService {
                 service.model = await AutoModel.from_pretrained('Xenova/paraphrase-multilingual-MiniLM-L12-v2');
 
                 this.instance = service;
+                console.log("✅ Embedding model loaded successfully.");
                 return this.instance;
             })();
         }
-
+        // Return the promise. All subsequent calls will wait for the first one to complete.
         return this.promise;
     }
 
