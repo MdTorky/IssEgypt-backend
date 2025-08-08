@@ -10,7 +10,7 @@ class EmbeddingService {
                 const { HfInference } = await import('@huggingface/inference');
 
                 const service = new EmbeddingService();
-                console.log("Initializing Hugging Face Inference Client...");
+                // console.log("Initializing Hugging Face Inference Client...");
 
                 const hfToken = process.env.HF_TOKEN;
                 if (!hfToken) {
@@ -21,7 +21,7 @@ class EmbeddingService {
                 service.inference = new HfInference(hfToken);
 
                 this.instance = service;
-                console.log("✅ Hugging Face Inference Client ready.");
+                // console.log("✅ Hugging Face Inference Client ready.");
                 return this.instance;
             })();
         }
@@ -34,7 +34,7 @@ class EmbeddingService {
         }
 
         try {
-            console.log(`🚀 Calling Hugging Face API via official library for: "${text.substring(0, 50)}..."`);
+            // console.log(`🚀 Calling Hugging Face API via official library for: "${text.substring(0, 50)}..."`);
 
             // Use the correct 'featureExtraction' method from the library.
             // The library handles the correct URL and payload automatically.
@@ -45,9 +45,7 @@ class EmbeddingService {
             });
 
             if (Array.isArray(embedding)) {
-                console.log("✅ Received embedding from API.");
-                // The library returns a normalized vector, so we don't need to do it ourselves.
-                // It can sometimes be nested, so we check for that.
+                // console.log("✅ Received embedding from API.");
                 return Array.isArray(embedding[0]) ? embedding[0] : embedding;
             } else {
                 throw new Error("Invalid response structure from Hugging Face API.");
