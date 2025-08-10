@@ -7,7 +7,8 @@ const {
     handleChatRequest,
     getAnalytics,
     updateKnowledge, // 1. Import the new functions
-    deleteKnowledge
+    deleteKnowledge,
+    getSuggestions
 } = require('../controllers/knowledgeController')
 const router = express.Router()
 
@@ -18,14 +19,15 @@ router.get('/', getAll)
 
 // GET a single workout
 router.get('/analytics', getAnalytics);
+router.get('/suggestions', getSuggestions);
 router.get('/:id', getItem)
 
 // POST a new workout
 router.post('/createKnowledge', createKnowledge)
 
-router.patch('/:id', updateKnowledge); 
+router.patch('/:id', updateKnowledge);
 
-router.delete('/:id', deleteKnowledge); 
+router.delete('/:id', deleteKnowledge);
 
 router.post('/chat', handleChatRequest);
 

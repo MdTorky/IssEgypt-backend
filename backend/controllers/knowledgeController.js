@@ -21,23 +21,8 @@ class EnhancedSmartKnowledgeController {
         this.updateKnowledge = this.updateKnowledge.bind(this);
         this.deleteKnowledge = this.deleteKnowledge.bind(this);
         this.getAnalytics = this.getAnalytics.bind(this);
+        this.getSuggestions = this.getSuggestions.bind(this);
     }
-
-    // extractKeywords(text, language = 'en') {
-    //     if (!text) return [];
-
-    //     // 1. Tokenize the text into individual words
-    //     const tokens = this.tokenizer.tokenize(text.toLowerCase());
-
-    //     // 2. Determine which stopwords to use (English or Arabic)
-    //     const stopwords = language === 'ar' ? stopword.ar : stopword.en;
-
-    //     // 3. Remove the common stopwords
-    //     const relevantTokens = stopword.removeStopwords(tokens, stopwords);
-
-    //     // 4. Filter out any remaining short words (noise) and return unique keywords
-    //     return [...new Set(relevantTokens.filter(token => token.length > 2))];
-    // }
 
     extractKeywords(text, language = 'en') {
         if (!text) return [];
@@ -707,6 +692,16 @@ Keep the response friendly and supportive. If the user asked in Arabic, respond 
     }
 
 
+    async getSuggestions(req, res) {
+        try {
+            const suggestions = await Knowledge.find({ isActive: true })
+                .select('_id text language keywords');
+            res.status(200).json(suggestions);
+        } catch (error) {
+            console.error("Error fetching suggestions:", error);
+            res.status(500).json({ error: "Failed to fetch suggestions." });
+        }
+    }
 
 }
 
@@ -778,6 +773,9 @@ module.exports = {
         }
     },
 
+
+
+
     getItem: async (req, res) => {
         const { id } = req.params;
         if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -791,6 +789,8 @@ module.exports = {
     },
 
 
+
+
     createKnowledge: enhancedSmartController.createKnowledge.bind(enhancedSmartController),
 
     // Enhanced chat handler
@@ -798,6 +798,7 @@ module.exports = {
 
     updateKnowledge: enhancedSmartController.updateKnowledge.bind(enhancedSmartController),
     deleteKnowledge: enhancedSmartController.deleteKnowledge.bind(enhancedSmartController),
+    getSuggestions: enhancedSmartController.getSuggestions.bind(enhancedSmartController),
     getAnalytics: enhancedSmartController.getAnalytics.bind(enhancedSmartController)
 
 
