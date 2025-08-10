@@ -719,9 +719,63 @@ const enhancedSmartController = new EnhancedSmartKnowledgeController()
 module.exports = {
 
     // Original functions
+    // getAll: async (req, res) => {
+    //     const items = await Knowledge.find({}).sort({ createdAt: -1 });
+    //     res.status(200).json(items);
+    // },
+
+
     getAll: async (req, res) => {
-        const items = await Knowledge.find({}).sort({ createdAt: -1 });
-        res.status(200).json(items);
+        try {
+            // --- 1. PARSE QUERY PARAMETERS ---
+            const page = parseInt(req.query.page) || 1;
+            const limit = parseInt(req.query.limit) || 10;
+            const skip = (page - 1) * limit;
+
+            const { language, category, sortBy, sortOrder = 'desc', search } = req.query;
+
+            // --- 2. BUILD THE FILTER QUERY ---
+            let filterQuery = { isActive: true };
+            if (language) filterQuery.language = language;
+            if (category) filterQuery.category = category;
+            if (search) {
+                // Case-insensitive search on 'text' and 'keywords' fields
+                filterQuery.$or = [
+                    { text: { $regex: search, $options: 'i' } },
+                    { keywords: { $regex: search, $options: 'i' } }
+                ];
+            }
+
+            // --- 3. BUILD THE SORT QUERY ---
+            let sortQuery = { createdAt: -1 }; // Default sort
+            if (sortBy) {
+                sortQuery = { [sortBy]: sortOrder === 'asc' ? 1 : -1 };
+            }
+
+            // --- 4. EXECUTE QUERIES ---
+            // Get the total count of documents matching the filter for pagination
+            const totalEntries = await Knowledge.countDocuments(filterQuery);
+            const totalPages = Math.ceil(totalEntries / limit);
+
+            // Get the paginated and filtered data
+            const items = await Knowledge.find(filterQuery)
+                .sort(sortQuery)
+                .skip(skip)
+                .limit(limit);
+
+            res.status(200).json({
+                data: items,
+                pagination: {
+                    currentPage: page,
+                    totalPages,
+                    totalEntries
+                }
+            });
+
+        } catch (error) {
+            console.error("Error fetching knowledge:", error);
+            res.status(500).json({ error: "Failed to fetch knowledge entries." });
+        }
     },
 
     getItem: async (req, res) => {
