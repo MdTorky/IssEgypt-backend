@@ -18,6 +18,7 @@ class EnhancedSmartKnowledgeController {
         this.findBestMatch = this.findBestMatch.bind(this);
         this.handleEnhancedChat = this.handleEnhancedChat.bind(this);
         this.createKnowledge = this.createKnowledge.bind(this);
+        this.createKnowledgeAI = this.createKnowledgeAI.bind(this);
         this.updateKnowledge = this.updateKnowledge.bind(this);
         this.deleteKnowledge = this.deleteKnowledge.bind(this);
         this.getAnalytics = this.getAnalytics.bind(this);
@@ -216,8 +217,9 @@ ${matchedKnowledge.answer}
 3. Ensure all core information and any links from the context are accurately included.
 4. Your entire response MUST be in ${language}. If the user is asking in Arabic, use a friendly Egyptian dialect.
 5. Start with a friendly opening like "Of course!", "Absolutely!", or the Arabic equivalent (e.g., "أكيد!", "طبعًا!").
-6.  If there are steps to an answer, list them in order.
-7.  Make the answer easy to read not just a block of words.
+6. If there are steps to an answer, list them in order.
+7. Make the answer easy to read not just a block of words.
+8. If the question is in Arabic answer in Egyptian Dialect Always
 
 **User's Question:** "${userInput}"
 
@@ -301,15 +303,15 @@ Keep the response friendly and supportive. If the user asked in Arabic, respond 
             //         'Content-Type': 'application/json'
             //     }
             // },
-            {
-                name: 'OpenRouter OpenAI',
-                url: 'https://openrouter.ai/api/v1/chat/completions',
-                model: 'openai/gpt-oss-20b:free',
-                headers: {
-                    'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
-                    'Content-Type': 'application/json'
-                }
-            },
+            // {
+            //     name: 'OpenRouter OpenAI',
+            //     url: 'https://openrouter.ai/api/v1/chat/completions',
+            //     model: 'openai/gpt-oss-20b:free',
+            //     headers: {
+            //         'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+            //         'Content-Type': 'application/json'
+            //     }
+            // },
             {
                 name: 'OpenRouter OpenAI',
                 url: 'https://openrouter.ai/api/v1/chat/completions',
@@ -529,7 +531,7 @@ Keep the response friendly and supportive. If the user asked in Arabic, respond 
 
 
 
-    async createKnowledge(req, res) {
+    async createKnowledgeAI(req, res) {
         try {
             const { text, answer, language, keywords: manualKeywords = [], category, priority } = req.body;
             const embeddingService = await EmbeddingService.getInstance();
@@ -590,6 +592,57 @@ Keep the response friendly and supportive. If the user asked in Arabic, respond 
             res.status(500).json({ error: "Failed to create knowledge: " + error.message });
         }
     }
+
+
+
+
+    async createKnowledge(req, res) {
+        try {
+            const { text, answer, language, keywords: manualKeywords = [], category, priority } = req.body;
+            const embeddingService = await EmbeddingService.getInstance();
+
+            console.log("Creating knowledge for:", text);
+
+            // Extract keywords from both question and answer
+            const extractedFromText = this.extractKeywords(text, language);
+            const extractedFromAnswer = this.extractKeywords(answer, language);
+
+            const combinedKeywords = [
+                ...manualKeywords.map(k => k.toLowerCase()),
+                ...extractedFromText,
+                ...extractedFromAnswer
+            ];
+            const allUniqueKeywords = [...new Set(combinedKeywords)];
+
+            const textToEmbed = `${text} ${answer} ${allUniqueKeywords.join(' ')}`;
+
+            // Generate embedding
+            const embedding = await embeddingService.getEmbedding(textToEmbed, language);
+
+            // Save single entry
+            await Knowledge.create({
+                text,
+                answer,
+                language,
+                embedding,
+                keywords: allUniqueKeywords,
+                category: category || "other",
+                priority: priority || 1,
+                isActive: true,
+            });
+
+            res.status(201).json({
+                message: "Knowledge saved successfully.",
+                canonicalQuestion: text,
+                syntheticQuestions: [] // Keeping the property for compatibility
+            });
+
+        } catch (error) {
+            console.error("Error creating knowledge:", error);
+            res.status(500).json({ error: "Failed to create knowledge: " + error.message });
+        }
+    }
+
 
 
 
@@ -792,6 +845,7 @@ module.exports = {
 
 
     createKnowledge: enhancedSmartController.createKnowledge.bind(enhancedSmartController),
+    createKnowledgeAI: enhancedSmartController.createKnowledgeAI.bind(enhancedSmartController),
 
     // Enhanced chat handler
     handleChatRequest: enhancedSmartController.handleEnhancedChat.bind(enhancedSmartController),

@@ -8,7 +8,8 @@ const {
     getAnalytics,
     updateKnowledge, // 1. Import the new functions
     deleteKnowledge,
-    getSuggestions
+    getSuggestions,
+    createKnowledgeAI
 } = require('../controllers/knowledgeController')
 const router = express.Router()
 
@@ -24,6 +25,8 @@ router.get('/:id', getItem)
 
 // POST a new workout
 router.post('/createKnowledge', createKnowledge)
+
+router.post('/createKnowledgeAI', createKnowledgeAI)
 
 router.patch('/:id', updateKnowledge);
 
