@@ -303,15 +303,15 @@ Keep the response friendly and supportive. If the user asked in Arabic, respond 
             //         'Content-Type': 'application/json'
             //     }
             // },
-            // {
-            //     name: 'OpenRouter OpenAI',
-            //     url: 'https://openrouter.ai/api/v1/chat/completions',
-            //     model: 'openai/gpt-oss-20b:free',
-            //     headers: {
-            //         'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
-            //         'Content-Type': 'application/json'
-            //     }
-            // },
+            {
+                name: 'OpenRouter OpenAI',
+                url: 'https://openrouter.ai/api/v1/chat/completions',
+                model: 'openai/gpt-oss-20b:free',
+                headers: {
+                    'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+                    'Content-Type': 'application/json'
+                }
+            },
             {
                 name: 'OpenRouter OpenAI',
                 url: 'https://openrouter.ai/api/v1/chat/completions',
