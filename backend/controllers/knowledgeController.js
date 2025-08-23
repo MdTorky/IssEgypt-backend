@@ -384,7 +384,7 @@ Keep the response friendly and supportive. If the user asked in Arabic, respond 
                     response = await axios.post(service.url, {
                         model: service.model,
                         messages: [{ role: 'user', content: prompt }],
-                        max_tokens: 1024,
+                        max_tokens: 4096,
                         temperature: 0.7
                     }, { headers: service.headers });
 
