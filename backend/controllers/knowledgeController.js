@@ -239,7 +239,7 @@ Formatting checklist (follow every time):
 - Closing line offering a brief follow-up question or help (e.g., "Do you want me to...?" or Arabic equivalent).
 
 Example structure to follow:
-1) Opening: "Of course!" / "أكيد!"
+1) Opening: Something Friendly
 2) Short rephrase of the context (1–2 lines) with a 🎓 or ✨ emoji.
 3) Bullet points or numbered steps listing core details, including any URLs or contacts verbatim.
 4) Closing friendly offer to help further.
@@ -384,7 +384,7 @@ Keep the response friendly and supportive. If the user asked in Arabic, respond 
                     response = await axios.post(service.url, {
                         model: service.model,
                         messages: [{ role: 'user', content: prompt }],
-                        max_tokens: 300,
+                        max_tokens: 1024,
                         temperature: 0.7
                     }, { headers: service.headers });
 
