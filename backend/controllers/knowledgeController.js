@@ -25,16 +25,31 @@ class EnhancedSmartKnowledgeController {
         this.getSuggestions = this.getSuggestions.bind(this);
     }
 
+    // extractKeywords(text, language = 'en') {
+    //     if (!text) return [];
+
+    //     const tokens = text.toLowerCase().split(/\s+/);
+
+    //     // We only filter for length. No stopword removal needed here.
+    //     return [...new Set(tokens.filter(token => token.length > 2))];
+    // }
+
+
     extractKeywords(text, language = 'en') {
         if (!text) return [];
-
-        // Simple whitespace tokenization is now the best approach,
-        // as we let the Atlas analyzer handle the linguistics.
-        const tokens = text.toLowerCase().split(/\s+/);
-
-        // We only filter for length. No stopword removal needed here.
-        return [...new Set(tokens.filter(token => token.length > 2))];
+        let tokens;
+        if (language === 'ar') {
+            const cleanedText = text.replace(/[^\u0600-\u06FF\s]/g, "").replace(/\s+/g, " ").trim();
+            tokens = cleanedText.split(/\s+/);
+        } else {
+            tokens = this.tokenizer.tokenize(text.toLowerCase());
+        }
+        const stopwordsList = language === 'ar' ? stopword.ar : stopword.en;
+        const relevantTokens = stopword.removeStopwords(tokens, stopwordsList);
+        return [...new Set(relevantTokens.filter(token => token.length > 2))];
     }
+
+
 
     async initializeEmbeddingService() {
         this.embeddingService = await EmbeddingService.getInstance();
@@ -52,58 +67,6 @@ class EnhancedSmartKnowledgeController {
     containsArabic(text) {
         return /[\u0600-\u06FF]/.test(text);
     }
-
-    normalizeArabic(text = "") {
-        return text
-            .replace(/[إأآا]/g, "ا")
-            .replace(/ى/g, "ي")
-            .replace(/ؤ/g, "و")
-            .replace(/ئ/g, "ي")
-            .replace(/ة/g, "ه")
-            .replace(/[^\w\s\u0600-\u06FF]/g, '') // Remove punctuation
-            .replace(/\s+/g, " ")
-            .trim()
-            .toLowerCase();
-    }
-
-    // Preprocess text for better matching
-    preprocessText(text, isArabic = false) {
-        if (!text) return '';
-        let processed = text.toLowerCase();
-        let tokens;
-        let stemmedTokens;
-
-
-        if (isArabic || this.containsArabic(processed)) {
-            processed = this.normalizeArabic(processed);
-            tokens = this.tokenizer.tokenize(processed);
-            tokens = stopword.removeStopwords(tokens, stopword.ar);
-            // CORRECTED: Use the imported stemmer object directly
-            stemmedTokens = tokens.map(token => this.arabicStemmer.stem(token));
-        } else {
-            tokens = this.tokenizer.tokenize(processed);
-            tokens = stopword.removeStopwords(tokens);
-            stemmedTokens = tokens.map(token => this.englishStemmer.stem(token));
-        }
-
-        // This part remains the same
-        let expandedTokens = [];
-        tokens.forEach(token => {
-            expandedTokens.push(token);
-            for (const [key, values] of Object.entries(this.synonyms)) {
-                if (values.includes(token) && !expandedTokens.includes(key)) {
-                    expandedTokens.push(key);
-                }
-            }
-        });
-
-        return stemmedTokens.join(' ');
-    }
-
-
-
-    // اجيب لينك الدرايف منين؟
-    // مين اللي عمل الموقع ده؟
 
 
 
@@ -130,14 +93,34 @@ class EnhancedSmartKnowledgeController {
                 ]),
                 Knowledge.aggregate([
                     {
+                        //     $search: {
+                        //         index: 'default',
+                        //         compound: {
+                        //             must: [
+                        //                 { text: { query: userInput, path: "text", score: { boost: { value: 3 } } } },
+                        //                 { text: { query: textSearchKeywords, path: "keywords" } }
+                        //             ],
+                        //             filter: [{ term: { path: 'language', query: userLang } }]
+                        //         }
+                        //     }
+                        // },
                         $search: {
                             index: 'default',
                             compound: {
-                                should: [
-                                    { text: { query: userInput, path: "text", score: { boost: { value: 3 } } } },
-                                    { text: { query: textSearchKeywords, path: "keywords" } }
-                                ],
-                                filter: [{ term: { path: 'language', query: userLang } }]
+                                must: [
+                                    {
+                                        text: {
+                                            query: userInput,
+                                            path: ['text', 'keywords'],
+                                            fuzzy: { maxEdits: 1 }
+                                        }
+                                    }],
+                                filter: [{
+                                    term: {
+                                        path: 'language',
+                                        query: userLang
+                                    }
+                                }]
                             }
                         }
                     },
@@ -203,27 +186,72 @@ class EnhancedSmartKnowledgeController {
                 }).exec();
 
                 const language = matchedKnowledge.language;
-                const prompt = `You are E-GPT, the official AI assistant for ISS Egypt. Your persona is a friendly, helpful senior student from ISS Egypt 🇪🇬.
-Your task is to answer the user's question based STRICTLY and ONLY on the "Context Information" provided.
+                //                 const prompt = `You are E-GPT, the official AI assistant for ISS Egypt. Your persona is a friendly, helpful senior student from ISS Egypt 🇪🇬.
+                // Your task is to answer the user's question based STRICTLY and ONLY on the "Context Information" provided.
 
-**Context Information:**
+                // **Context Information:**
+                // ---
+                // ${matchedKnowledge.answer}
+                // ---
+
+                // **Instructions:**
+                // 1. Rephrase the context in a natural, conversational tone. Do not just copy it.
+                // 2. Use relevant emojis (like ✨, 🎓, 📍) to make the response engaging and easy to read.
+                // 3. Ensure all core information and any links from the context are accurately included.
+                // 4. Your entire response MUST be in ${language}. If the user is asking in Arabic, use a friendly Egyptian dialect.
+                // 5. Start with a friendly opening like "Of course!", "Absolutely!", or the Arabic equivalent (e.g., "أكيد!", "طبعًا!").
+                // 6. If there are steps to an answer, list them in order.
+                // 7. Make the answer easy to read not just a block of words.
+                // 8. If the question is in Arabic answer in Egyptian Dialect Always
+
+                // **User's Question:** "${userInput}"
+
+                // **Your Friendly Answer (in ${language}):**`;
+
+                const prompt = `You are E-GPT — the official AI assistant for ISS Egypt. Your persona: a friendly, helpful senior student from ISS Egypt 🇪🇬 who speaks warmly and clearly.
+
+Goal: Answer the user's question STRICTLY and ONLY using the "Context Information" provided. Do not add outside knowledge, opinions, or assumptions.
+
+Context source:
 ---
 ${matchedKnowledge.answer}
 ---
 
-**Instructions:**
-1. Rephrase the context in a natural, conversational tone. Do not just copy it.
-2. Use relevant emojis (like ✨, 🎓, 📍) to make the response engaging and easy to read.
-3. Ensure all core information and any links from the context are accurately included.
-4. Your entire response MUST be in ${language}. If the user is asking in Arabic, use a friendly Egyptian dialect.
-5. Start with a friendly opening like "Of course!", "Absolutely!", or the Arabic equivalent (e.g., "أكيد!", "طبعًا!").
-6. If there are steps to an answer, list them in order.
-7. Make the answer easy to read not just a block of words.
-8. If the question is in Arabic answer in Egyptian Dialect Always
+Rules and behavior:
+1. Start with a friendly opener: choose one of these (or their Arabic equivalent): "Of course!", "Absolutely!", "أكيد!", "طبعًا!".
+2. Rephrase the context in a natural, conversational tone — do not copy it verbatim. Make it sound like a helpful senior student explaining to a peer.
+3. Use relevant emojis (e.g., ✨, 🎓, 📍, ✅) to make the answer engaging and scannable.
+4. Preserve every core fact and any links from the context exactly as they appear. If the context contains URLs or contact details, include them.
+5. If the context implies steps, list them in order (numbered list). If not, present the information in short, clear bullet points or short paragraphs — not a wall of text.
+6. Keep sentences concise and use clear headings or line breaks so the answer is easy to read.
+7. Language policy:
+   - Your entire reply must be in ${language}.
+   - If the user asked in Arabic, reply in Egyptian Colloquial Arabic (friendly dialect).
+8. Never introduce new facts, policies, or recommendations beyond what the context provides. If the context does not answer the user’s question, politely say you can only use the provided context and that the information isn’t available there.
+9. If the context is empty or missing, respond: friendly opener + a brief statement that you can only answer from the provided context and that no relevant info was found.
+10. Keep the tone friendly, casual, and helpful (like a senior student giving advice).
 
-**User's Question:** "${userInput}"
+Formatting checklist (follow every time):
+- Opening line: friendly opener.
+- One-line summary rephrasing the context.
+- Key details preserved with emojis and short lines or numbered steps.
+- Include links/contact info exactly as in context.
+- Closing line offering a brief follow-up question or help (e.g., "Do you want me to...?" or Arabic equivalent).
 
-**Your Friendly Answer (in ${language}):**`;
+Example structure to follow:
+1) Opening: "Of course!" / "أكيد!"
+2) Short rephrase of the context (1–2 lines) with a 🎓 or ✨ emoji.
+3) Bullet points or numbered steps listing core details, including any URLs or contacts verbatim.
+4) Closing friendly offer to help further.
+
+Now produce the user-facing answer strictly following these rules, using only the context above and nothing else.
+
+Input fields available for your answer generation:
+- ${matchedKnowledge.answer} — the full context you must rely on.
+- ${userInput} — the user's question.
+- ${language} — target reply language.
+
+Begin your response to the user with the friendly opener and then proceed as specified.`
 
                 aiReply = await this.callFreeAI(prompt);
 
@@ -388,6 +416,13 @@ Keep the response friendly and supportive. If the user asked in Arabic, respond 
         // If all AI services fail, return a helpful message
         return "I'm having trouble connecting to my AI services right now. Please try again in a moment, or contact our support team for immediate assistance.";
     }
+
+    // async callFreeAIWithTimeout(prompt, timeoutMs = 8000) {
+    //     return Promise.race([
+    //         this.callFreeAI(prompt),
+    //         new Promise((_, reject) => setTimeout(() => reject(new Error("AI Timeout")), timeoutMs))
+    //     ]);
+    // }
 
     // Learn from interactions to improve future responses
     async learnFromInteraction(userInput, aiResponse, matchedKnowledge) {

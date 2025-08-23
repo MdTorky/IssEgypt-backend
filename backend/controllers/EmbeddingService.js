@@ -5,8 +5,6 @@ class EmbeddingService {
     static getInstance() {
         if (this.instance === null && this.promise === null) {
             this.promise = (async () => {
-                // DYNAMIC IMPORT: This is the key. It allows a require-based (CJS)
-                // file to correctly load an import-based (ESM) library.
                 const { HfInference } = await import('@huggingface/inference');
 
                 const service = new EmbeddingService();
@@ -36,8 +34,6 @@ class EmbeddingService {
         try {
             // console.log(`🚀 Calling Hugging Face API via official library for: "${text.substring(0, 50)}..."`);
 
-            // Use the correct 'featureExtraction' method from the library.
-            // The library handles the correct URL and payload automatically.
             const embedding = await this.inference.featureExtraction({
                 // model: 'sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2',
                 model: 'sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2',
