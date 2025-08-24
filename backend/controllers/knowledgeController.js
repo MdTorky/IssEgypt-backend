@@ -935,6 +935,7 @@ module.exports = {
     // Enhanced chat handler
     handleChatRequest: enhancedSmartController.handleEnhancedChat.bind(enhancedSmartController),
     handleTelegramChat: enhancedSmartController.handleTelegramChat.bind(enhancedSmartController),
+    handleEnhancedChatForTelegram: enhancedSmartController.handleEnhancedChatForTelegram.bind(enhancedSmartController),
 
     updateKnowledge: enhancedSmartController.updateKnowledge.bind(enhancedSmartController),
     deleteKnowledge: enhancedSmartController.deleteKnowledge.bind(enhancedSmartController),
