@@ -446,7 +446,7 @@ Keep the response friendly and supportive. If the user asked in Arabic, respond 
             const replyText = result?.reply || "❌ Sorry, I couldn't process that.";
 
             // Send reply back to Telegram
-            await axios.post(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`, {
+            await axios.post(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
                 chat_id: chatId,
                 text: replyText
             });
