@@ -9,7 +9,8 @@ const {
     updateKnowledge, // 1. Import the new functions
     deleteKnowledge,
     getSuggestions,
-    createKnowledgeAI
+    createKnowledgeAI,
+    handleTelegramChat
 } = require('../controllers/knowledgeController')
 const router = express.Router()
 
@@ -33,6 +34,8 @@ router.patch('/:id', updateKnowledge);
 router.delete('/:id', deleteKnowledge);
 
 router.post('/chat', handleChatRequest);
+
+router.post('/telegram-webhook', handleTelegramChat);
 
 
 

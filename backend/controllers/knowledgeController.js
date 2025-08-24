@@ -17,6 +17,7 @@ class EnhancedSmartKnowledgeController {
         this.extractKeywords = this.extractKeywords.bind(this);
         this.findBestMatch = this.findBestMatch.bind(this);
         this.handleEnhancedChat = this.handleEnhancedChat.bind(this);
+        this.handleTelegramChat = this.handleTelegramChat.bind(this);
         this.createKnowledge = this.createKnowledge.bind(this);
         this.createKnowledgeAI = this.createKnowledgeAI.bind(this);
         this.updateKnowledge = this.updateKnowledge.bind(this);
@@ -416,6 +417,52 @@ Keep the response friendly and supportive. If the user asked in Arabic, respond 
         // If all AI services fail, return a helpful message
         return "I'm having trouble connecting to my AI services right now. Please try again in a moment, or contact our support team for immediate assistance.";
     }
+
+
+
+    async handleTelegramChat(req, res) {
+        try {
+            const chatId = req.body.message.chat.id;
+            const userInput = req.body.message.text;
+
+            // Call the existing handleEnhancedChat function
+            const response = await handleEnhancedChatForTelegram(userInput);
+
+            // Send the response back to Telegram
+            await axios.post(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+                chat_id: chatId,
+                text: response.reply,
+            });
+
+            res.status(200).send('OK');
+        } catch (error) {
+            console.error('Error handling Telegram message:', error);
+            res.status(500).send('Internal Server Error');
+        }
+    }
+
+    async handleEnhancedChatForTelegram(userInput) {
+        // Simulate the request object expected by handleEnhancedChat
+        const mockReq = {
+            body: { message: userInput },
+            ip: 'telegram',
+            headers: { 'user-agent': 'telegram-bot' },
+            sessionID: null,
+        };
+
+        // Simulate the response object
+        let jsonResponse;
+        const mockRes = {
+            json: (data) => { jsonResponse = data; },
+            status: (code) => ({ json: (data) => { jsonResponse = data; } }),
+        };
+
+        // Call the existing handleEnhancedChat function
+        await handleEnhancedChat(mockReq, mockRes);
+
+        return jsonResponse;
+    }
+
 
     // async callFreeAIWithTimeout(prompt, timeoutMs = 8000) {
     //     return Promise.race([
@@ -884,6 +931,7 @@ module.exports = {
 
     // Enhanced chat handler
     handleChatRequest: enhancedSmartController.handleEnhancedChat.bind(enhancedSmartController),
+    handleTelegramChat: enhancedSmartController.handleTelegramChat.bind(enhancedSmartController),
 
     updateKnowledge: enhancedSmartController.updateKnowledge.bind(enhancedSmartController),
     deleteKnowledge: enhancedSmartController.deleteKnowledge.bind(enhancedSmartController),
