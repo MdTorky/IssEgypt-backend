@@ -18,6 +18,7 @@ class EnhancedSmartKnowledgeController {
         this.findBestMatch = this.findBestMatch.bind(this);
         this.handleEnhancedChat = this.handleEnhancedChat.bind(this);
         this.handleTelegramChat = this.handleTelegramChat.bind(this);
+        this.handleEnhancedChatForTelegram = this.handleEnhancedChatForTelegram.bind(this);
         this.createKnowledge = this.createKnowledge.bind(this);
         this.createKnowledgeAI = this.createKnowledgeAI.bind(this);
         this.updateKnowledge = this.updateKnowledge.bind(this);
@@ -419,6 +420,29 @@ Keep the response friendly and supportive. If the user asked in Arabic, respond 
     }
 
 
+    async handleEnhancedChatForTelegram(userInput) {
+        // Simulate the request object expected by handleEnhancedChat
+        const mockReq = {
+            body: { message: userInput },
+            ip: 'telegram',
+            headers: { 'user-agent': 'telegram-bot' },
+            sessionID: null,
+        };
+
+        // Simulate the response object
+        let jsonResponse;
+        const mockRes = {
+            json: (data) => { jsonResponse = data; },
+            status: (code) => ({ json: (data) => { jsonResponse = data; } }),
+        };
+
+        // Call the existing handleEnhancedChat function
+        await handleEnhancedChat(mockReq, mockRes);
+
+        return jsonResponse;
+    }
+
+
 
     async handleTelegramChat(req, res) {
         try {
@@ -441,27 +465,7 @@ Keep the response friendly and supportive. If the user asked in Arabic, respond 
         }
     }
 
-    async handleEnhancedChatForTelegram(userInput) {
-        // Simulate the request object expected by handleEnhancedChat
-        const mockReq = {
-            body: { message: userInput },
-            ip: 'telegram',
-            headers: { 'user-agent': 'telegram-bot' },
-            sessionID: null,
-        };
 
-        // Simulate the response object
-        let jsonResponse;
-        const mockRes = {
-            json: (data) => { jsonResponse = data; },
-            status: (code) => ({ json: (data) => { jsonResponse = data; } }),
-        };
-
-        // Call the existing handleEnhancedChat function
-        await handleEnhancedChat(mockReq, mockRes);
-
-        return jsonResponse;
-    }
 
 
     // async callFreeAIWithTimeout(prompt, timeoutMs = 8000) {
