@@ -442,7 +442,7 @@ Keep the response friendly and supportive. If the user asked in Arabic, respond 
                 status: () => ({ json: (d) => d })
             };
 
-            const result = await module.exports.handleChatRequest(fakeReq, fakeRes);
+            const result = await this.handleEnhancedChat(fakeReq, fakeRes);
             const replyText = result?.reply || "❌ Sorry, I couldn't process that.";
 
             // Send reply back to Telegram
