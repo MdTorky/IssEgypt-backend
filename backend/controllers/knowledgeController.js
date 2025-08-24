@@ -420,29 +420,6 @@ Keep the response friendly and supportive. If the user asked in Arabic, respond 
     }
 
 
-    async handleEnhancedChatForTelegram(userInput) {
-        // Simulate the request object expected by handleEnhancedChat
-        const mockReq = {
-            body: { message: userInput },
-            ip: 'telegram',
-            headers: { 'user-agent': 'telegram-bot' },
-            sessionID: null,
-        };
-
-        // Simulate the response object
-        let jsonResponse;
-        const mockRes = {
-            json: (data) => { jsonResponse = data; },
-            status: (code) => ({ json: (data) => { jsonResponse = data; } }),
-        };
-
-        // Call the existing handleEnhancedChat function
-        await handleEnhancedChat(mockReq, mockRes);
-
-        return jsonResponse;
-    }
-
-
 
     async handleTelegramChat(req, res) {
         try {
@@ -463,6 +440,28 @@ Keep the response friendly and supportive. If the user asked in Arabic, respond 
             console.error('Error handling Telegram message:', error);
             res.status(500).send('Internal Server Error');
         }
+    }
+
+    async handleEnhancedChatForTelegram(userInput) {
+        // Simulate the request object expected by handleEnhancedChat
+        const mockReq = {
+            body: { message: userInput },
+            ip: 'telegram',
+            headers: { 'user-agent': 'telegram-bot' },
+            sessionID: null,
+        };
+
+        // Simulate the response object
+        let jsonResponse;
+        const mockRes = {
+            json: (data) => { jsonResponse = data; },
+            status: (code) => ({ json: (data) => { jsonResponse = data; } }),
+        };
+
+        // Call the existing handleEnhancedChat function using 'this'
+        await this.handleEnhancedChat(mockReq, mockRes);
+
+        return jsonResponse;
     }
 
 
