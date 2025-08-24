@@ -422,8 +422,6 @@ Keep the response friendly and supportive. If the user asked in Arabic, respond 
     async handleTelegramChat(req, res) {
         try {
             const body = req.body;
-
-            // Telegram message info
             const chatId = body.message?.chat?.id;
             const userMessage = body.message?.text;
 
@@ -431,7 +429,13 @@ Keep the response friendly and supportive. If the user asked in Arabic, respond 
                 return res.status(200).send("No message received");
             }
 
-            // Call your existing AI chat logic
+            // 1. Tell Telegram the bot is "typing..."
+            await axios.post(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendChatAction`, {
+                chat_id: chatId,
+                action: "typing"
+            });
+
+            // 2. Call your AI logic
             const fakeReq = {
                 body: { message: userMessage },
                 ip: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
@@ -442,10 +446,10 @@ Keep the response friendly and supportive. If the user asked in Arabic, respond 
                 status: () => ({ json: (d) => d })
             };
 
-            const result = await this.handleEnhancedChat(fakeReq, fakeRes);
+            const result = await this.handleEnhancedChat(fakeReq, fakeRes); // safer than module.exports
             const replyText = result?.reply || "❌ Sorry, I couldn't process that.";
 
-            // Send reply back to Telegram
+            // 3. Send final AI reply back to user
             await axios.post(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
                 chat_id: chatId,
                 text: replyText
@@ -457,6 +461,7 @@ Keep the response friendly and supportive. If the user asked in Arabic, respond 
             return res.status(500).json({ error: "Failed to process Telegram message" });
         }
     }
+
 
 
     // async callFreeAIWithTimeout(prompt, timeoutMs = 8000) {
