@@ -17,9 +17,8 @@ class EnhancedSmartKnowledgeController {
         this.extractKeywords = this.extractKeywords.bind(this);
         this.findBestMatch = this.findBestMatch.bind(this);
         this.handleEnhancedChat = this.handleEnhancedChat.bind(this);
-        this.handleTelegramChat = this.handleTelegramChat.bind(this);
-        this.handleEnhancedChatForTelegram = this.handleEnhancedChatForTelegram.bind(this);
         this.createKnowledge = this.createKnowledge.bind(this);
+        this.handleTelegramChat = this.handleTelegramChat.bind(this);
         this.createKnowledgeAI = this.createKnowledgeAI.bind(this);
         this.updateKnowledge = this.updateKnowledge.bind(this);
         this.deleteKnowledge = this.deleteKnowledge.bind(this);
@@ -420,51 +419,44 @@ Keep the response friendly and supportive. If the user asked in Arabic, respond 
     }
 
 
-
     async handleTelegramChat(req, res) {
         try {
-            const chatId = req.body.message.chat.id;
-            const userInput = req.body.message.text;
+            const body = req.body;
 
-            // Call the existing handleEnhancedChat function
-            const response = await handleEnhancedChatForTelegram(userInput);
+            // Telegram message info
+            const chatId = body.message?.chat?.id;
+            const userMessage = body.message?.text;
 
-            // Send the response back to Telegram
-            await axios.post(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+            if (!chatId || !userMessage) {
+                return res.status(200).send("No message received");
+            }
+
+            // Call your existing AI chat logic
+            const fakeReq = {
+                body: { message: userMessage },
+                ip: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+                headers: req.headers
+            };
+            const fakeRes = {
+                json: (data) => data,
+                status: () => ({ json: (d) => d })
+            };
+
+            const result = await module.exports.handleChatRequest(fakeReq, fakeRes);
+            const replyText = result?.reply || "❌ Sorry, I couldn't process that.";
+
+            // Send reply back to Telegram
+            await axios.post(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`, {
                 chat_id: chatId,
-                text: response.reply,
+                text: replyText
             });
 
-            res.status(200).send('OK');
+            return res.status(200).json({ ok: true });
         } catch (error) {
-            console.error('Error handling Telegram message:', error);
-            res.status(500).send('Internal Server Error');
+            console.error("Telegram webhook error:", error.message);
+            return res.status(500).json({ error: "Failed to process Telegram message" });
         }
     }
-
-    async handleEnhancedChatForTelegram(userInput) {
-        // Simulate the request object expected by handleEnhancedChat
-        const mockReq = {
-            body: { message: userInput },
-            ip: 'telegram',
-            headers: { 'user-agent': 'telegram-bot' },
-            sessionID: null,
-        };
-
-        // Simulate the response object
-        let jsonResponse;
-        const mockRes = {
-            json: (data) => { jsonResponse = data; },
-            status: (code) => ({ json: (data) => { jsonResponse = data; } }),
-        };
-
-        // Call the existing handleEnhancedChat function using 'this'
-        await this.handleEnhancedChat(mockReq, mockRes);
-
-        return jsonResponse;
-    }
-
-
 
 
     // async callFreeAIWithTimeout(prompt, timeoutMs = 8000) {
@@ -935,7 +927,6 @@ module.exports = {
     // Enhanced chat handler
     handleChatRequest: enhancedSmartController.handleEnhancedChat.bind(enhancedSmartController),
     handleTelegramChat: enhancedSmartController.handleTelegramChat.bind(enhancedSmartController),
-    handleEnhancedChatForTelegram: enhancedSmartController.handleEnhancedChatForTelegram.bind(enhancedSmartController),
 
     updateKnowledge: enhancedSmartController.updateKnowledge.bind(enhancedSmartController),
     deleteKnowledge: enhancedSmartController.deleteKnowledge.bind(enhancedSmartController),
