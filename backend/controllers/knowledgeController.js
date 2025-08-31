@@ -332,15 +332,15 @@ Keep the response friendly and supportive. If the user asked in Arabic, respond 
             //         'Content-Type': 'application/json'
             //     }
             // },
-            {
-                name: 'OpenRouter OpenAI',
-                url: 'https://openrouter.ai/api/v1/chat/completions',
-                model: 'openai/gpt-oss-20b:free',
-                headers: {
-                    'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
-                    'Content-Type': 'application/json'
-                }
-            },
+            // {
+            //     name: 'OpenRouter OpenAI',
+            //     url: 'https://openrouter.ai/api/v1/chat/completions',
+            //     model: 'openai/gpt-oss-20b:free',
+            //     headers: {
+            //         'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+            //         'Content-Type': 'application/json'
+            //     }
+            // },
             {
                 name: 'OpenRouter OpenAI',
                 url: 'https://openrouter.ai/api/v1/chat/completions',
@@ -350,6 +350,7 @@ Keep the response friendly and supportive. If the user asked in Arabic, respond 
                     'Content-Type': 'application/json'
                 }
             },
+
             {
                 name: 'OpenRouter Qwen',
                 url: 'https://openrouter.ai/api/v1/chat/completions',
@@ -516,34 +517,6 @@ Keep the response friendly and supportive. If the user asked in Arabic, respond 
 
 
 
-    extractArabicKeywords(text) {
-        if (!text) return []
-
-        const arabicStopWords = [
-            "من",
-            "في",
-            "على",
-            "ما",
-            "و",
-            "هو",
-            "هي",
-            "مع",
-            "عن",
-            "إلى",
-            "هذا",
-            "ذلك",
-            "كل",
-            "أن",
-            "إن",
-            "لم",
-        ]
-        const words = text
-            .replace(/[^\u0600-\u06FF\s]/g, "")
-            .split(/\s+/)
-            .filter((word) => word.length > 2 && !arabicStopWords.includes(word))
-
-        return [...new Set(words)]
-    }
 
 
     async getAnalytics(req, res) {
