@@ -13,7 +13,6 @@ const gallerySchema = new Schema({
     },
     icon: {
         type: String,
-        required: true
     },
     folderLink: {
         type: String,

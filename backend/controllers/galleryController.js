@@ -4,6 +4,30 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 
+const { uploadFileToDrive } = require('../utilities/googleDrive');
+
+const uploadToDrive = async (req, res) => {
+    try {
+        const folderId = req.body.folderId;
+        if (!folderId) return res.status(400).json({ error: 'Folder ID is required' });
+
+        const file = req.file;
+        if (!file) return res.status(400).json({ error: 'No file uploaded' });
+
+        const driveData = await uploadFileToDrive(file, folderId);
+
+        res.status(200).json({
+            fileId: driveData.id,
+            webViewLink: driveData.webViewLink,
+        });
+    } catch (err) {
+        console.error('Drive Upload Error:', err.message);
+        res.status(500).json({ error: err.message });
+    }
+}
+
+
+
 
 const getForms = async (req, res) => {
     const forms = await Gallery.find({}).sort({ createdAt: -1 })
@@ -104,5 +128,6 @@ module.exports = {
     getForm,
     deleteForm,
     updateForm,
-    updateAllSessions
+    updateAllSessions,
+    uploadToDrive,
 }

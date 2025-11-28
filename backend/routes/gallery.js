@@ -1,11 +1,13 @@
 const express = require('express')
+const upload = require('../middleware/uplaod');
 const {
     createForm,
     getForms,
     getForm,
     deleteForm,
     updateForm,
-    updateAllSessions
+    updateAllSessions,
+    uploadToDrive,
 } = require('../controllers/galleryController')
 const router = express.Router()
 
@@ -26,6 +28,8 @@ router.delete('/:id', deleteForm)
 
 // UPDATE a workout
 router.patch('/:id', updateForm)
-router.patch('/session/update', updateAllSessions)
+
+router.post('/upload', upload.single('image'), uploadToDrive);
+
 
 module.exports = router
